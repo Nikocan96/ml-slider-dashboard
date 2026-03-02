@@ -6,13 +6,16 @@ Uso local:    python generate.py
 En CI/CD:    idem (auth via GOOGLE_APPLICATION_CREDENTIALS o Workload Identity)
 """
 
+import base64
 import json
+import os
 import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 from google.cloud import bigquery
+from google.oauth2 import service_account
 
 SITES = ['MLA', 'MLB', 'MLM', 'MLC', 'MLU', 'MCO', 'MPE']
 MAX_ROWS_PER_CLUSTER = 200
@@ -46,8 +49,21 @@ def query_site(client: bigquery.Client, site_id: str) -> list[dict]:
     ]
 
 
+def make_client() -> bigquery.Client:
+    sa_key_b64 = os.environ.get('GCP_SA_KEY')
+    if sa_key_b64:
+        key_info = json.loads(base64.b64decode(sa_key_b64.strip()).decode('utf-8'))
+        key_info['private_key'] = key_info['private_key'].replace('\\n', '\n')
+        credentials = service_account.Credentials.from_service_account_info(
+            key_info,
+            scopes=['https://www.googleapis.com/auth/bigquery'],
+        )
+        return bigquery.Client(credentials=credentials, project=key_info['project_id'])
+    return bigquery.Client()
+
+
 def main():
-    client = bigquery.Client()
+    client = make_client()
     all_data = []
 
     for site in SITES:

@@ -22,17 +22,12 @@ jobs:
           python-version: '3.11'
           cache: pip
 
-      - name: Authenticate to GCP
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
-        run: |
-          python3 -c "import base64,os; open('/tmp/gcp-sa-key.json','w').write(base64.b64decode(os.environ['GCP_SA_KEY'].strip()).decode())"
-          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-sa-key.json" >> $GITHUB_ENV
-
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Generate dashboard
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         run: python generate.py
 
       - name: Commit updated dashboard
