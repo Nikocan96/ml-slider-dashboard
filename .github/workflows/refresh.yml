@@ -26,11 +26,7 @@ jobs:
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
         run: |
-          python -c "
-import base64, os
-key = base64.b64decode(os.environ['GCP_SA_KEY'].strip()).decode('utf-8')
-open('/tmp/gcp-sa-key.json', 'w').write(key)
-"
+          python3 -c "import base64,os; open('/tmp/gcp-sa-key.json','w').write(base64.b64decode(os.environ['GCP_SA_KEY'].strip()).decode())"
           echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-sa-key.json" >> $GITHUB_ENV
 
       - name: Install dependencies
