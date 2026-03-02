@@ -5,21 +5,16 @@ on:
     - cron: '0 * * * *'   # cada hora en punto (UTC)
   workflow_dispatch:        # botón manual desde GitHub
 
+permissions:
+  contents: write
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
 
-    env:
-      GCS_BUCKET: ml-slider-dashboard   # <-- cambiá esto por el nombre de tu bucket
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Authenticate to GCP
-        run: |
-          echo "${{ secrets.GCP_SA_KEY }}" | base64 -d > /tmp/gcp-sa-key.json
-          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-sa-key.json" >> $GITHUB_ENV
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,15 +22,25 @@ jobs:
           python-version: '3.11'
           cache: pip
 
+      - name: Authenticate to GCP
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+        run: |
+          python -c "
+import base64, os
+key = base64.b64decode(os.environ['GCP_SA_KEY'].strip()).decode('utf-8')
+open('/tmp/gcp-sa-key.json', 'w').write(key)
+"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/gcp-sa-key.json" >> $GITHUB_ENV
+
       - name: Install dependencies
         run: pip install -r requirements.txt
 
       - name: Generate dashboard
         run: python generate.py
 
-      - name: Upload to GCS
-        uses: google-github-actions/upload-cloud-storage@v2
+      - name: Commit updated dashboard
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          path: docs/index.html
-          destination: ${{ env.GCS_BUCKET }}
-          parent: false
+          commit_message: 'chore: refresh dashboard [skip ci]'
+          file_pattern: docs/index.html
