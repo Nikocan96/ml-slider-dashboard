@@ -52,7 +52,10 @@ def query_site(client: bigquery.Client, site_id: str) -> list[dict]:
 def make_client() -> bigquery.Client:
     sa_key_b64 = os.environ.get('GCP_SA_KEY')
     if sa_key_b64:
-        key_info = json.loads(base64.b64decode(sa_key_b64.strip()).decode('utf-8'))
+        decoded = base64.b64decode(sa_key_b64.strip()).decode('utf-8')
+        key_info = json.loads(decoded)
+        pk = key_info.get('private_key', '')
+        print(f"DEBUG key_type={key_info.get('type')} pk_len={len(pk)} has_newline={chr(10) in pk} starts={repr(pk[:40])}", flush=True)
         key_info['private_key'] = key_info['private_key'].replace('\\n', '\n')
         credentials = service_account.Credentials.from_service_account_info(
             key_info,
