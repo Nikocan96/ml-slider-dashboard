@@ -55,8 +55,11 @@ def make_client() -> bigquery.Client:
         decoded = base64.b64decode(sa_key_b64.strip()).decode('utf-8')
         key_info = json.loads(decoded)
         pk = key_info.get('private_key', '')
-        print(f"DEBUG key_type={key_info.get('type')} pk_len={len(pk)} has_newline={chr(10) in pk} starts={repr(pk[:40])}", flush=True)
-        key_info['private_key'] = key_info['private_key'].replace('\\n', '\n')
+        pk = pk.replace('\\r\\n', '\n').replace('\\n', '\n').replace('\r\n', '\n').replace('\r', '\n')
+        if not pk.endswith('\n'):
+            pk += '\n'
+        key_info['private_key'] = pk
+        print(f"DEBUG type={key_info.get('type')} pk_len={len(pk)} ends={repr(pk[-50:])}", flush=True)
         credentials = service_account.Credentials.from_service_account_info(
             key_info,
             scopes=['https://www.googleapis.com/auth/bigquery'],
