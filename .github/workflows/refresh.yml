@@ -1,8 +1,8 @@
 name: Refresh Dashboard
 
 on:
-  schedule:
-    - cron: '0 * * * *'   # cada hora en punto (UTC)
+  # schedule:
+  #   - cron: '0 * * * *'   # cada hora en punto (UTC) — DESACTIVADO
   workflow_dispatch:        # botón manual desde GitHub
 
 permissions:
