@@ -171,7 +171,7 @@ fetch('data.json')
     return r.json().then(function(d){return{d:d,lm:lm};});
   })
   .then(function(o){
-    DATA=o.d;
+    DATA=o.d.data||o.d;
     if(o.lm){
       var dt=new Date(o.lm);
       var s=dt.getUTCFullYear()+'-'
