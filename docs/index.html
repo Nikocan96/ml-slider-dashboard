@@ -3,16 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ML_MAIN_SLIDER — Dashboard de Gobernanza</title>
+<title>ML_MAIN_SLIDER &middot; Dashboard de Gobernanza</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;font-size:13px}
 .header{background:#161b22;border-bottom:1px solid #21262d;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .header h1{font-size:16px;font-weight:700;color:#e6edf3;white-space:nowrap}
 .header h1 span{color:#58a6ff}
-.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badges{display:flex;gap:8px;flex-wrap:wrap;flex:1}
 .badge{background:#21262d;border:1px solid #30363d;border-radius:4px;padding:3px 10px;font-size:11px;color:#8b949e}
 .badge strong{color:#58a6ff}
+.team-tag{background:#1a2d1a;border:1px solid #2ea043;border-radius:4px;padding:3px 10px;font-size:11px;color:#3fb950;font-weight:600;white-space:nowrap}
 .filter-row{padding:10px 24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #21262d}
 .filter-row .lbl{color:#8b949e;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:2px}
 .sep{color:#30363d;font-size:18px;margin:0 6px}
@@ -63,10 +64,11 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="header">
   <h1>ML_MAIN_<span>SLIDER</span> &middot; Dashboard de Gobernanza</h1>
   <div class="badges">
-    <div class="badge">M&eacute;tricas: <strong>&#218;ltimas 24h</strong></div>
+    <div class="badge">M&eacute;tricas: <strong>Hoy &middot; &uacute;ltimas 24h por site</strong></div>
     <div class="badge">Vigencia: <strong>Activo ahora</strong></div>
-    <div class="badge">Datos: <strong>2026-03-02</strong></div>
+    <div class="badge">Actualizado: <strong id="upd-ts">cargando&hellip;</strong> &nbsp;&middot;&nbsp; cada hora</div>
   </div>
+  <div class="team-tag">Producto &middot; Site Merch</div>
 </div>
 <div class="filter-row">
   <span class="lbl">Site:</span>
@@ -93,78 +95,136 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 let DATA=[];
 
 const CLUSTERS=[
-  {id:'PRIORIDAD_0',        label:'PRIORIDAD 0',        desc:'GUARANTEED',                   color:'#a371f7'},
-  {id:'PRIORIDAD_PRINCIPAL',label:'PRIORIDAD PRINCIPAL',desc:'PROGRAMMATIC \u00b7 PRIMARY',  color:'#f0883e'},
-  {id:'PRIORIDAD_ALTA',     label:'PRIORIDAD ALTA',     desc:'PROGRAMMATIC \u00b7 HIGH',     color:'#58a6ff'},
-  {id:'PRIORIDAD_MEDIA',    label:'PRIORIDAD MEDIA',    desc:'PROGRAMMATIC \u00b7 MEDIUM',   color:'#3fb950'},
+  {id:'PRIORIDAD_0',        label:'PRIORIDAD 0',        desc:'GUARANTEED',                  color:'#a371f7'},
+  {id:'PRIORIDAD_PRINCIPAL',label:'PRIORIDAD PRINCIPAL',desc:'PROGRAMMATIC \u00b7 PRIMARY', color:'#f0883e'},
+  {id:'PRIORIDAD_ALTA',     label:'PRIORIDAD ALTA',     desc:'PROGRAMMATIC \u00b7 HIGH',    color:'#58a6ff'},
+  {id:'PRIORIDAD_MEDIA',    label:'PRIORIDAD MEDIA',    desc:'PROGRAMMATIC \u00b7 MEDIUM',  color:'#3fb950'},
 ];
 
-let cSite='MLA',cFilter='all',sKey=null,sDir=-1;
+let cSite='MLA', cFilter='all';
+const sortState={};
+CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
 
-function fmtN(v){return v==null?'<span style="color:#6e7681">\u2014</span>':v.toLocaleString('es-AR')}
-function fmtCtr(v){return v==null?'<span style="color:#6e7681">\u2014</span>':(v*100).toFixed(3)+'%'}
-function fmtSoi(v){return(v==null||isNaN(v))?'\u2014':(v*100).toFixed(1)+'%'}
+function fmtN(v){return v==null?'<span style="color:#6e7681">\u2014</span>':v.toLocaleString('es-AR');}
+function fmtCtr(v){return v==null?'<span style="color:#6e7681">\u2014</span>':(v*100).toFixed(3)+'%';}
+function fmtSoi(v){return(v==null||isNaN(v))?'\u2014':(v*100).toFixed(1)+'%';}
 
 function setSite(s,btn){
-  cSite=s;sKey=null;
-  document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');render();
+  cSite=s;
+  document.querySelectorAll('.sbtn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  render();
 }
 function setFilter(f,btn){
   cFilter=f;
-  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');render();
+  document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  render();
 }
-function sortBy(k){
-  if(sKey===k)sDir*=-1;else{sKey=k;sDir=-1;}render();
+function sortBy(cid,k){
+  var s=sortState[cid];
+  if(s.key===k)s.dir*=-1;else{s.key=k;s.dir=-1;}
+  render();
 }
 function toggleSection(h){
   h.classList.toggle('collapsed');
-  const b=h.nextElementSibling;
+  var b=h.nextElementSibling;
   b.style.display=b.style.display==='none'?'':'none';
 }
 
 function render(){
-  let fd=DATA.filter(r=>r.site===cSite);
-  if(cFilter==='ros_only')fd=fd.filter(r=>r.ros);
-  else if(cFilter==='segmented_only')fd=fd.filter(r=>!r.ros);
+  var fd=DATA.filter(function(r){return r.site===cSite;});
+  if(cFilter==='ros_only')fd=fd.filter(function(r){return r.ros;});
+  else if(cFilter==='segmented_only')fd=fd.filter(function(r){return !r.ros;});
 
-  const totals={};
-  CLUSTERS.forEach(cl=>{totals[cl.id]=fd.filter(r=>r.c===cl.id).reduce((a,r)=>a+r.impr,0);});
+  var totals={};
+  CLUSTERS.forEach(function(cl){
+    totals[cl.id]=fd.filter(function(r){return r.c===cl.id;}).reduce(function(a,r){return a+r.impr;},0);
+  });
 
-  const tI=fd.reduce((a,r)=>a+r.impr,0);
-  const tC=fd.reduce((a,r)=>a+r.clk,0);
-  const tLI=new Set(fd.map(r=>r.li)).size;
-  const tCm=new Set(fd.map(r=>r.camp)).size;
+  var tI=fd.reduce(function(a,r){return a+r.impr;},0);
+  var tC=fd.reduce(function(a,r){return a+r.clk;},0);
+  var tLI=new Set(fd.map(function(r){return r.li;})).size;
+  var tCm=new Set(fd.map(function(r){return r.camp;})).size;
 
   document.getElementById('summary').innerHTML=
-    `<div class="sum-card"><div class="lbl">Impr. \u00FAltimas 24h</div><div class="val">${tI.toLocaleString('es-AR')}</div><div class="sub">${cSite}</div></div>`+
-    `<div class="sum-card"><div class="lbl">Clicks \u00FAltimas 24h</div><div class="val">${tC.toLocaleString('es-AR')}</div><div class="sub">CTR ${tI?((tC/tI)*100).toFixed(3)+'%':'\u2014'}</div></div>`+
-    `<div class="sum-card"><div class="lbl">Line Items activos</div><div class="val">${tLI}</div><div class="sub">activos ahora</div></div>`+
-    `<div class="sum-card"><div class="lbl">Campa\u00F1as activas</div><div class="val">${tCm}</div><div class="sub">distintas</div></div>`;
+    '<div class="sum-card"><div class="lbl">Impr. hoy (24h)</div><div class="val">'+tI.toLocaleString('es-AR')+'</div><div class="sub">'+cSite+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Clicks hoy (24h)</div><div class="val">'+tC.toLocaleString('es-AR')+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Line Items activos</div><div class="val">'+tLI+'</div><div class="sub">activos ahora</div></div>'+
+    '<div class="sum-card"><div class="lbl">Campa\u00f1as activas</div><div class="val">'+tCm+'</div><div class="sub">distintas</div></div>';
 
-  let html='';
-  CLUSTERS.forEach(cl=>{
-    const rows=fd.filter(r=>r.c===cl.id);
+  var html='';
+  CLUSTERS.forEach(function(cl){
+    var rows=fd.filter(function(r){return r.c===cl.id;});
     if(!rows.length){
-      if(cl.id==='PRIORIDAD_0')html+=`<div class="section"><div class="sh" style="border-color:${cl.color}" onclick="toggleSection(this)"><div style="width:8px;height:8px;border-radius:50%;background:${cl.color};flex-shrink:0"></div><h2 style="color:${cl.color}">${cl.label}</h2><span class="desc">${cl.desc}</span><span class="cnt">0 line items</span><span class="arr">\u25bc</span></div><div><div class="no-data">Sin campa\u00F1as GUARANTEED activas en ${cSite}.</div></div></div>`;
+      if(cl.id==='PRIORIDAD_0'){
+        html+='<div class="section">'+
+          '<div class="sh" style="border-color:'+cl.color+'" onclick="toggleSection(this)">'+
+          '<div style="width:8px;height:8px;border-radius:50%;background:'+cl.color+';flex-shrink:0"></div>'+
+          '<h2 style="color:'+cl.color+'">'+cl.label+'</h2>'+
+          '<span class="desc">'+cl.desc+'</span>'+
+          '<span class="cnt">0 line items</span>'+
+          '<span class="arr">\u25bc</span></div>'+
+          '<div><div class="no-data">Sin campa\u00f1as GUARANTEED activas en '+cSite+'.</div></div></div>';
+      }
       return;
     }
-    let sorted=[...rows];
-    if(sKey)sorted.sort((a,b)=>{let av=a[sKey],bv=b[sKey];if(av==null)av=sDir>0?-Infinity:Infinity;if(bv==null)bv=sDir>0?-Infinity:Infinity;return(av>bv?1:av<bv?-1:0)*sDir;});
-    else sorted.sort((a,b)=>b.impr-a.impr);
-    const ct=totals[cl.id];
-    const tbody=sorted.map(r=>{
-      const s=(ct>0&&r.impr>0)?r.impr/ct:null;
-      const bp=s?Math.round(s*100):0;
-      const ow=r.owner||'<span style="color:#6e7681">\u2014</span>';
-      const rt=r.ros?'<span class="tag tag-r">ROS</span>':'<span class="tag tag-s">Seg.</span>';
-      return `<tr><td><span class="id-c">${r.li}</span></td><td><span class="id-c">${r.camp}</span></td><td>${ow}</td><td class="num">${fmtN(r.impr)}</td><td class="num">${fmtN(r.clk)}</td><td class="num">${fmtCtr(r.ctr)}</td><td><div class="bar-wrap"><div class="bar-outer"><div class="bar-inner" style="width:${bp}%;background:${cl.color}"></div></div><span class="bar-pct">${fmtSoi(s)}</span></div></td><td>${rt}</td><td style="color:#6e7681;font-size:11px">${r.end}</td></tr>`;
+
+    var ss=sortState[cl.id];
+    var sorted=rows.slice();
+    if(ss.key){
+      sorted.sort(function(a,b){
+        var av=a[ss.key],bv=b[ss.key];
+        if(av==null)av=ss.dir>0?-Infinity:Infinity;
+        if(bv==null)bv=ss.dir>0?-Infinity:Infinity;
+        return(av>bv?1:av<bv?-1:0)*ss.dir;
+      });
+    }else{
+      sorted.sort(function(a,b){return b.impr-a.impr;});
+    }
+
+    var ct=totals[cl.id];
+    var cid=cl.id;
+    var tbody=sorted.map(function(r){
+      var s=(ct>0&&r.impr>0)?r.impr/ct:null;
+      var bp=s?Math.round(s*100):0;
+      var ow=r.owner||'<span style="color:#6e7681">\u2014</span>';
+      var rt=r.ros?'<span class="tag tag-r">ROS</span>':'<span class="tag tag-s">Seg.</span>';
+      return '<tr>'+
+        '<td><span class="id-c">'+r.li+'</span></td>'+
+        '<td><span class="id-c">'+r.camp+'</span></td>'+
+        '<td>'+ow+'</td>'+
+        '<td class="num">'+fmtN(r.impr)+'</td>'+
+        '<td class="num">'+fmtN(r.clk)+'</td>'+
+        '<td class="num">'+fmtCtr(r.ctr)+'</td>'+
+        '<td><div class="bar-wrap"><div class="bar-outer"><div class="bar-inner" style="width:'+bp+'%;background:'+cl.color+'"></div></div><span class="bar-pct">'+fmtSoi(s)+'</span></div></td>'+
+        '<td>'+rt+'</td>'+
+        '<td style="color:#6e7681;font-size:11px">'+r.end+'</td>'+
+        '</tr>';
     }).join('');
-    html+=`<div class="section"><div class="sh" style="border-color:${cl.color}" onclick="toggleSection(this)"><div style="width:8px;height:8px;border-radius:50%;background:${cl.color};flex-shrink:0"></div><h2 style="color:${cl.color}">${cl.label}</h2><span class="desc">${cl.desc}</span><span class="cnt">${rows.length} line item${rows.length!==1?'s':''}</span><span class="arr">\u25bc</span></div><div><div class="tbl-wrap"><table class="tbl"><thead><tr><th onclick="sortBy('li')">Line Item</th><th onclick="sortBy('camp')">Campaign</th><th onclick="sortBy('owner')">Owner</th><th onclick="sortBy('impr')" class="num">Impr.</th><th onclick="sortBy('clk')" class="num">Clicks</th><th onclick="sortBy('ctr')" class="num">CTR</th><th>Share de Impr.</th><th onclick="sortBy('ros')">Tipo de Audiencia</th><th onclick="sortBy('end')">End Date</th></tr></thead><tbody>${tbody}</tbody></table></div></div></div>`;
+
+    html+='<div class="section">'+
+      '<div class="sh" style="border-color:'+cl.color+'" onclick="toggleSection(this)">'+
+      '<div style="width:8px;height:8px;border-radius:50%;background:'+cl.color+';flex-shrink:0"></div>'+
+      '<h2 style="color:'+cl.color+'">'+cl.label+'</h2>'+
+      '<span class="desc">'+cl.desc+'</span>'+
+      '<span class="cnt">'+rows.length+' line item'+(rows.length!==1?'s':'')+'</span>'+
+      '<span class="arr">\u25bc</span></div>'+
+      '<div><div class="tbl-wrap"><table class="tbl"><thead><tr>'+
+      '<th onclick="sortBy(\''+cid+'\',\'li\')">Line Item</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'camp\')">Campaign</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'owner\')">Owner</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="num">Impr. (24h) \u25be</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="num">Clicks (24h)</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="num">CTR</th>'+
+      '<th>Share de Impr.</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'ros\')">Tipo de Audiencia</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'end\')">End Date</th>'+
+      '</tr></thead><tbody>'+tbody+'</tbody></table></div></div></div>';
   });
   document.getElementById('content').innerHTML=html;
 }
+
 fetch('data.json')
   .then(function(r){
     var lm=r.headers.get('Last-Modified');
@@ -179,8 +239,8 @@ fetch('data.json')
         +String(dt.getUTCDate()).padStart(2,'0')+' '
         +String(dt.getUTCHours()).padStart(2,'0')+':'
         +String(dt.getUTCMinutes()).padStart(2,'0')+' UTC';
-      var b=document.querySelector('.badge strong');
-      if(b)b.textContent=s;
+      var el=document.getElementById('upd-ts');
+      if(el)el.textContent=s;
     }
     render();
   })
