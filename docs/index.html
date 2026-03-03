@@ -64,7 +64,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="header">
   <h1>ML_MAIN_<span>SLIDER</span> &middot; Dashboard de Gobernanza</h1>
   <div class="badges">
-    <div class="badge">M&eacute;tricas: <strong>&#x23F1; &Uacute;ltimas 24hs</strong></div>
+    <div class="badge">M&eacute;tricas: <strong>&#x23F1; &Uacute;ltimos 7 d&iacute;as</strong></div>
     <div class="badge">Vigencia: <strong>Activo ahora</strong></div>
     <div class="badge">Actualizado: <strong id="upd-ts">cargando&hellip;</strong> &nbsp;&middot;&nbsp; cada hora</div>
   </div>
@@ -148,8 +148,8 @@ function render(){
   var tCm=new Set(fd.map(function(r){return r.camp;})).size;
 
   document.getElementById('summary').innerHTML=
-    '<div class="sum-card"><div class="lbl">Impr. hoy (24h)</div><div class="val">'+tI.toLocaleString('es-AR')+'</div><div class="sub">'+cSite+'</div></div>'+
-    '<div class="sum-card"><div class="lbl">Clicks hoy (24h)</div><div class="val">'+tC.toLocaleString('es-AR')+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Impr. (7d)</div><div class="val">'+tI.toLocaleString('es-AR')+'</div><div class="sub">'+cSite+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Clicks (7d)</div><div class="val">'+tC.toLocaleString('es-AR')+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
     '<div class="sum-card"><div class="lbl">Line Items activos</div><div class="val">'+tLI+'</div><div class="sub">activos ahora</div></div>'+
     '<div class="sum-card"><div class="lbl">Campa\u00f1as activas</div><div class="val">'+tCm+'</div><div class="sub">distintas</div></div>';
 
@@ -214,8 +214,8 @@ function render(){
       '<th onclick="sortBy(\''+cid+'\',\'li\')">Line Item</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'camp\')">Campaign</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'owner\')">Owner</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="num">Impr. (24h) \u25be</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="num">Clicks (24h)</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="num">Impr. (7d) \u25be</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="num">Clicks (7d)</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="num">CTR</th>'+
       '<th>Share de Impr.</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'ros\')">Tipo de Audiencia</th>'+
