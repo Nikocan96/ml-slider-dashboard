@@ -65,7 +65,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
   <h1>ML_MAIN_<span>SLIDER</span> &middot; Dashboard de Gobernanza</h1>
   <div class="badges">
     <div class="badge">M&eacute;tricas: <strong>&#x23F1; &Uacute;ltimos 7 d&iacute;as</strong></div>
-    <div class="badge">Vigencia: <strong>Activo ahora</strong></div>
+    <div class="badge">Vigencia: <strong>Activos ahora</strong></div>
     <div class="badge">Actualizado: <strong id="upd-ts">cargando&hellip;</strong> &nbsp;&middot;&nbsp; cada hora</div>
   </div>
   <div class="team-tag">Producto &middot; Site Merch</div>
@@ -225,6 +225,15 @@ function render(){
   document.getElementById('content').innerHTML=html;
 }
 
+var lastUpdated=null;
+function updateTimeBadge(){
+  var el=document.getElementById('upd-ts');
+  if(!el||!lastUpdated)return;
+  var mins=Math.floor((Date.now()-lastUpdated)/60000);
+  el.textContent=mins<=0?'hace menos de 1 min':'hace '+mins+(mins===1?' minuto':' minutos');
+}
+setInterval(updateTimeBadge,60000);
+
 fetch('data.json')
   .then(function(r){
     var lm=r.headers.get('Last-Modified');
@@ -232,16 +241,7 @@ fetch('data.json')
   })
   .then(function(o){
     DATA=o.d.data||o.d;
-    if(o.lm){
-      var dt=new Date(o.lm);
-      var s=dt.getUTCFullYear()+'-'
-        +String(dt.getUTCMonth()+1).padStart(2,'0')+'-'
-        +String(dt.getUTCDate()).padStart(2,'0')+' '
-        +String(dt.getUTCHours()).padStart(2,'0')+':'
-        +String(dt.getUTCMinutes()).padStart(2,'0')+' UTC';
-      var el=document.getElementById('upd-ts');
-      if(el)el.textContent=s;
-    }
+    if(o.lm){lastUpdated=new Date(o.lm).getTime();updateTimeBadge();}
     render();
   })
   .catch(function(e){console.error('Error cargando data.json:',e);});
