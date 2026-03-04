@@ -148,7 +148,7 @@ CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
 const COL_CONF=[
   {min:90,  max:145, flex:true },  // 0  Line Item
   {min:90,  max:145, flex:true },  // 1  Campaign
-  {min:80,  max:130, flex:true },  // 2  Owner  ← más angosto, trunca con …
+  {min:80,  max:130, flex:true },  // 2  Anunciante  ← más angosto, trunca con …
   {min:98,  max:125, flex:false},  // 3  Impresiones
   {min:62,  max:82,  flex:false},  // 4  Clicks
   {min:48,  max:66,  flex:false},  // 5  CTR
@@ -398,7 +398,7 @@ function render(){
       '<div><div class="tbl-wrap"><table class="tbl">'+makeColgroup()+'<thead><tr>'+
       '<th onclick="sortBy(\''+cid+'\',\'li\')">Line Item</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'camp\')">Campaign</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'owner\')">Owner</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'owner\')">Anunciante</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="c-num">Impresiones (7d) \u25be</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="c-num">Clicks (7d)</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="c-num">CTR</th>'+
