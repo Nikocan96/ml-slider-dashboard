@@ -220,18 +220,11 @@ function render(){
       var bp=s?Math.round(s*100):0;
       var ow=r.owner||'<span style="color:#6e7681">\u2014</span>';
       var rt=r.ros?'<span class="tag tag-r">ROS</span>':'<span class="tag tag-s">Seg.</span>';
-      var sid=SITE_IDS[r.site]||{};
-      var accId=r.acc_id||sid.acc;
-      var advId=r.adv_id||sid.adv;
-      var base='https://ads.adminml.com/display/';
-      var qp='accountId='+accId+'&campaignId='+r.camp+'&advertiserId='+advId+'&filters=range:15+attribution_metric:action';
-      var liUrl=base+'creatives?'+qp+'&lineItemId='+r.li;
-      var campUrl=base+'lineitems?'+qp;
-      var lnk='text-decoration:none;display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle';
+      var nm='display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle';
       var endFmt=r.end?r.end.substring(0,10):'';
       return '<tr>'+
-        '<td style="max-width:210px"><a class="id-c" href="'+liUrl+'" target="_blank" style="'+lnk+'" title="'+(r.li_name||r.li)+'">'+(r.li_name||r.li)+'</a></td>'+
-        '<td style="max-width:210px"><a class="id-c" href="'+campUrl+'" target="_blank" style="'+lnk+'" title="'+(r.camp_name||r.camp)+'">'+(r.camp_name||r.camp)+'</a></td>'+
+        '<td style="max-width:210px"><span class="id-c" style="'+nm+'" title="'+(r.li_name||r.li)+'">'+(r.li_name||r.li)+'</span></td>'+
+        '<td style="max-width:210px"><span class="id-c" style="'+nm+'" title="'+(r.camp_name||r.camp)+'">'+(r.camp_name||r.camp)+'</span></td>'+
         '<td>'+ow+'</td>'+
         '<td class="num" style="width:90px">'+fmtN(r.impr)+'</td>'+
         '<td class="num" style="width:72px">'+fmtN(r.clk)+'</td>'+
@@ -258,7 +251,7 @@ function render(){
       '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="num" style="width:60px">CTR</th>'+
       '<th>Share de Impr.</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'ros\')" style="width:54px">Audiencia</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'end\')" style="width:80px">Vto.</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'end\')" style="width:80px">End Date</th>'+
       '</tr></thead><tbody>'+tbody+'</tbody></table></div></div></div>';
   });
   document.getElementById('content').innerHTML=html;
