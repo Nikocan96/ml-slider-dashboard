@@ -6,7 +6,7 @@
 <title>ML_MAIN_SLIDER &middot; Dashboard de Gobernanza</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;font-size:13px}
+body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;overflow-x:hidden}
 .header{background:#161b22;border-bottom:1px solid #21262d;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .header h1{font-size:16px;font-weight:700;color:#e6edf3;white-space:nowrap}
 .header h1 span{color:#58a6ff}
@@ -38,23 +38,51 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 .sh .cnt{font-size:11px;color:#6e7681;margin-left:auto}
 .sh .arr{font-size:10px;color:#6e7681;transition:transform .2s}
 .sh.collapsed .arr{transform:rotate(-90deg)}
-.tbl-wrap{overflow-x:auto}
-.tbl{width:100%;border-collapse:collapse}
-.tbl th{background:#161b22;color:#6e7681;font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:6px 10px;text-align:left;border-bottom:1px solid #21262d;white-space:nowrap;cursor:pointer}
+
+/* ── Tabla: sin scroll horizontal ── */
+.tbl-wrap{overflow:hidden;width:100%}
+.tbl{width:100%;border-collapse:collapse;table-layout:fixed}
+
+/* Cabeceras */
+.tbl th{
+  background:#161b22;color:#6e7681;font-size:10px;text-transform:uppercase;
+  letter-spacing:.5px;padding:6px 8px;text-align:left;border-bottom:1px solid #21262d;
+  white-space:nowrap;cursor:pointer;overflow:hidden;text-overflow:ellipsis
+}
 .tbl th:hover{color:#c9d1d9}
-.tbl td{padding:6px 10px;border-bottom:1px solid #21262d;white-space:nowrap}
+.tbl th.c-num{text-align:right}
+
+/* Celdas base */
+.tbl td{padding:5px 8px;border-bottom:1px solid #21262d;overflow:hidden}
 .tbl tr:hover td{background:#1c2128}
 .tbl tr:last-child td{border-bottom:none}
+
+/* Variantes por tipo de columna */
+.tbl td.c-trunc{white-space:nowrap;text-overflow:ellipsis}
+.tbl td.c-num{
+  white-space:nowrap;text-align:right;
+  font-variant-numeric:tabular-nums;font-family:'Consolas',monospace
+}
+.tbl td.c-bar,.tbl td.c-tag,.tbl td.c-date{white-space:nowrap}
+.tbl td.c-date{color:#6e7681;font-size:11px}
+
+/* Span truncado dentro de celda */
+.trunc-span{
+  display:block;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;font-family:'Consolas',monospace;
+  font-size:11px;color:#58a6ff
+}
+
 .num{text-align:right;font-variant-numeric:tabular-nums;font-family:'Consolas',monospace}
 .tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600}
 .tag-r{background:#1a3d2b;color:#3fb950}
 .tag-s{background:#3d2a0e;color:#f0883e}
-.id-c{font-family:'Consolas',monospace;font-size:11px;color:#58a6ff}
-.bar-wrap{display:flex;align-items:center;gap:6px}
-.bar-outer{width:60px;height:6px;background:#21262d;border-radius:3px;flex-shrink:0}
+.bar-wrap{display:flex;align-items:center;gap:4px}
+.bar-outer{width:46px;height:6px;background:#21262d;border-radius:3px;flex-shrink:0}
 .bar-inner{height:6px;border-radius:3px}
-.bar-pct{font-size:10px;color:#8b949e;min-width:36px}
+.bar-pct{font-size:10px;color:#8b949e;min-width:28px;white-space:nowrap}
 .no-data{padding:18px 0;color:#6e7681;font-style:italic;font-size:12px}
+
 ::-webkit-scrollbar{width:6px;height:6px}
 ::-webkit-scrollbar-track{background:#0d1117}
 ::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
@@ -114,9 +142,123 @@ let cSite='MLA', cFilter='all';
 const sortState={};
 CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
 
-function fmtN(v){if(v==null)return '<span style="color:#6e7681">\u2014</span>';return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
-function fmtCtr(v){return v==null?'<span style="color:#6e7681">\u2014</span>':(v*100).toFixed(3)+'%';}
-function fmtSoi(v){return(v==null||isNaN(v))?'\u2014':(v*100).toFixed(1)+'%';}
+/* ── Constraints por columna (índice 0–8) ─────────────────────────────
+   flex:true  → se puede reducir proporcionalmente si la tabla desborda
+   flex:false → se respeta su rango min/max sin reducción extra          */
+const COL_CONF=[
+  {min:90,  max:155, flex:true },  // 0  Line Item
+  {min:90,  max:155, flex:true },  // 1  Campaign
+  {min:95,  max:170, flex:true },  // 2  Owner
+  {min:98,  max:125, flex:false},  // 3  Impresiones
+  {min:62,  max:82,  flex:false},  // 4  Clicks
+  {min:48,  max:66,  flex:false},  // 5  CTR
+  {min:108, max:138, flex:false},  // 6  Share de Impr.
+  {min:56,  max:74,  flex:false},  // 7  Audiencia
+  {min:70,  max:90,  flex:false},  // 8  End Date
+];
+// Suma de defaults (max clamped) = 155+155+170+125+82+66+138+74+90 = 1055px
+// Suma de mínimos                = 90+90+95+98+62+48+108+56+70  = 717px
+
+/* ── Medición de texto con canvas (sin DOM extra) ── */
+var _mctx=null;
+function _mw(txt,font){
+  if(!_mctx){var c=document.createElement('canvas');_mctx=c.getContext('2d');}
+  _mctx.font=font;
+  return _mctx.measureText(String(txt||'')).width;
+}
+
+/* ── autoFitTableColumns ──────────────────────────────────────────────
+   Mide headers + primeras N filas, aplica constraints y escala si
+   la suma supera el ancho disponible del contenedor.                   */
+function autoFitTableColumns(){
+  var CELL_PAD=16;   // padding horizontal total por celda (8px c/lado)
+  var SAMPLE   =20;  // filas a samplear por tabla
+  var FONT_HDR ='600 10px "Segoe UI",system-ui,sans-serif';
+  var FONT_ID  ='11px Consolas,monospace';
+  var FONT_TXT ='13px "Segoe UI",system-ui,sans-serif';
+
+  document.querySelectorAll('.tbl').forEach(function(tbl){
+    var cols=tbl.querySelectorAll('col');
+    if(!cols.length)return;
+    var n=cols.length;
+
+    /* ancho disponible del contenedor */
+    var wrap=tbl.closest('.tbl-wrap')||tbl.parentElement;
+    var avail=wrap?wrap.getBoundingClientRect().width:0;
+    if(avail<200)avail=document.documentElement.clientWidth-48;
+
+    var ideal=new Array(n).fill(0);
+
+    /* medir headers */
+    tbl.querySelectorAll('thead th').forEach(function(th,i){
+      if(i>=n)return;
+      /* letter-spacing ~0.5px × chars, factor 1.15 approx */
+      var w=_mw(th.textContent.toUpperCase(),FONT_HDR)*1.15+CELL_PAD;
+      if(w>ideal[i])ideal[i]=w;
+    });
+
+    /* medir filas (sample) */
+    var rows=tbl.querySelectorAll('tbody tr');
+    var limit=Math.min(rows.length,SAMPLE);
+    for(var j=0;j<limit;j++){
+      var cells=rows[j].querySelectorAll('td');
+      for(var i=0;i<n&&i<cells.length;i++){
+        var font=(i<=1)?FONT_ID:FONT_TXT;
+        var w=_mw(cells[i].textContent,font)+CELL_PAD;
+        if(w>ideal[i])ideal[i]=w;
+      }
+    }
+
+    /* clamp a constraints */
+    var clamped=ideal.map(function(w,i){
+      var c=COL_CONF[i]||{min:80,max:200,flex:true};
+      return Math.max(c.min,Math.min(c.max,Math.ceil(w)));
+    });
+
+    /* si la suma excede el espacio, reducir columnas flex proporcionalmente */
+    var total=clamped.reduce(function(s,w){return s+w;},0);
+    if(total>avail){
+      var excess=total-avail;
+      var flexIdx=[],flexRoom=0;
+      clamped.forEach(function(w,i){
+        var c=COL_CONF[i]||{min:80,max:200,flex:true};
+        if(c.flex){flexIdx.push(i);flexRoom+=(w-c.min);}
+      });
+      if(flexRoom>0){
+        var cut=Math.min(excess,flexRoom);
+        flexIdx.forEach(function(i){
+          var c=COL_CONF[i];
+          var share=(clamped[i]-c.min)/flexRoom;
+          clamped[i]=Math.max(c.min,Math.floor(clamped[i]-cut*share));
+        });
+      }
+    }
+
+    /* aplicar widths a <col> */
+    clamped.forEach(function(w,i){
+      if(cols[i])cols[i].style.width=w+'px';
+    });
+  });
+}
+
+/* resize con debounce 200ms */
+var _rtimer=null;
+window.addEventListener('resize',function(){
+  clearTimeout(_rtimer);
+  _rtimer=setTimeout(autoFitTableColumns,200);
+});
+
+/* ── helpers ── */
+function fmtN(v){
+  if(v==null)return '<span style="color:#6e7681">\u2014</span>';
+  return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+}
+function fmtCtr(v){
+  return v==null?'<span style="color:#6e7681">\u2014</span>':(v*100).toFixed(3)+'%';
+}
+function fmtSoi(v){
+  return(v==null||isNaN(v))?'\u2014':(v*100).toFixed(1)+'%';
+}
 function miniDonut(ros,seg,sz){
   var tot=ros+seg; if(!tot)return '';
   var r=(sz-8)/2,cx=sz/2,cy=sz/2,c=2*Math.PI*r;
@@ -150,6 +292,15 @@ function toggleSection(h){
   h.classList.toggle('collapsed');
   var b=h.nextElementSibling;
   b.style.display=b.style.display==='none'?'':'none';
+  autoFitTableColumns();
+}
+
+/* colgroup fijo: anchos iniciales razonables antes del autofit */
+var COL_DEFAULTS=[130,130,150,112,74,60,122,66,80];
+function makeColgroup(){
+  return '<colgroup>'+COL_DEFAULTS.map(function(w){
+    return '<col style="width:'+w+'px">';
+  }).join('')+'</colgroup>';
 }
 
 function render(){
@@ -215,23 +366,25 @@ function render(){
 
     var ct=totals[cl.id];
     var cid=cl.id;
+
     var tbody=sorted.map(function(r){
       var s=(ct>0&&r.impr>0)?r.impr/ct:null;
       var bp=s?Math.round(s*100):0;
-      var ow=r.owner||'<span style="color:#6e7681">\u2014</span>';
+      var liLabel =r.li_name||r.li||'';
+      var campLabel=r.camp_name||r.camp||'';
+      var owLabel  =r.owner||'\u2014';
       var rt=r.ros?'<span class="tag tag-r">ROS</span>':'<span class="tag tag-s">Seg.</span>';
-      var nm='display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle';
       var endFmt=r.end?r.end.substring(0,10):'';
       return '<tr>'+
-        '<td style="max-width:210px"><span class="id-c" style="'+nm+'" title="'+(r.li_name||r.li)+'">'+(r.li_name||r.li)+'</span></td>'+
-        '<td style="max-width:210px"><span class="id-c" style="'+nm+'" title="'+(r.camp_name||r.camp)+'">'+(r.camp_name||r.camp)+'</span></td>'+
-        '<td>'+ow+'</td>'+
-        '<td class="num" style="width:90px">'+fmtN(r.impr)+'</td>'+
-        '<td class="num" style="width:72px">'+fmtN(r.clk)+'</td>'+
-        '<td class="num" style="width:60px">'+fmtCtr(r.ctr)+'</td>'+
-        '<td><div class="bar-wrap"><div class="bar-outer"><div class="bar-inner" style="width:'+bp+'%;background:'+cl.color+'"></div></div><span class="bar-pct">'+fmtSoi(s)+'</span></div></td>'+
-        '<td style="width:54px">'+rt+'</td>'+
-        '<td style="color:#6e7681;font-size:11px;width:80px">'+endFmt+'</td>'+
+        '<td class="c-trunc"><span class="trunc-span" title="'+liLabel+'">'+liLabel+'</span></td>'+
+        '<td class="c-trunc"><span class="trunc-span" title="'+campLabel+'">'+campLabel+'</span></td>'+
+        '<td class="c-trunc" style="font-size:12px" title="'+owLabel+'">'+owLabel+'</td>'+
+        '<td class="c-num">'+fmtN(r.impr)+'</td>'+
+        '<td class="c-num">'+fmtN(r.clk)+'</td>'+
+        '<td class="c-num">'+fmtCtr(r.ctr)+'</td>'+
+        '<td class="c-bar"><div class="bar-wrap"><div class="bar-outer"><div class="bar-inner" style="width:'+bp+'%;background:'+cl.color+'"></div></div><span class="bar-pct">'+fmtSoi(s)+'</span></div></td>'+
+        '<td class="c-tag">'+rt+'</td>'+
+        '<td class="c-date">'+endFmt+'</td>'+
         '</tr>';
     }).join('');
 
@@ -242,19 +395,21 @@ function render(){
       '<span class="desc">'+cl.desc+'</span>'+
       '<span class="cnt">'+rows.length+' line item'+(rows.length!==1?'s':'')+'</span>'+
       '<span class="arr">\u25bc</span></div>'+
-      '<div><div class="tbl-wrap"><table class="tbl"><thead><tr>'+
+      '<div><div class="tbl-wrap"><table class="tbl">'+makeColgroup()+'<thead><tr>'+
       '<th onclick="sortBy(\''+cid+'\',\'li\')">Line Item</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'camp\')">Campaign</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'owner\')">Owner</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="num" style="width:90px">Impresiones (7d) \u25be</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="num" style="width:72px">Clicks (7d)</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="num" style="width:60px">CTR</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="c-num">Impresiones (7d) \u25be</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="c-num">Clicks (7d)</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="c-num">CTR</th>'+
       '<th>Share de Impr.</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'ros\')" style="width:54px">Audiencia</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'end\')" style="width:80px">End Date</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'ros\')">Audiencia</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'end\')">End Date</th>'+
       '</tr></thead><tbody>'+tbody+'</tbody></table></div></div></div>';
   });
+
   document.getElementById('content').innerHTML=html;
+  autoFitTableColumns();
 }
 
 var lastUpdated=null;
