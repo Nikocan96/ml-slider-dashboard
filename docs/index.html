@@ -146,9 +146,9 @@ CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
    flex:true  → se puede reducir proporcionalmente si la tabla desborda
    flex:false → se respeta su rango min/max sin reducción extra          */
 const COL_CONF=[
-  {min:90,  max:155, flex:true },  // 0  Line Item
-  {min:90,  max:155, flex:true },  // 1  Campaign
-  {min:95,  max:170, flex:true },  // 2  Owner
+  {min:90,  max:145, flex:true },  // 0  Line Item
+  {min:90,  max:145, flex:true },  // 1  Campaign
+  {min:80,  max:130, flex:true },  // 2  Owner  ← más angosto, trunca con …
   {min:98,  max:125, flex:false},  // 3  Impresiones
   {min:62,  max:82,  flex:false},  // 4  Clicks
   {min:48,  max:66,  flex:false},  // 5  CTR
@@ -296,7 +296,7 @@ function toggleSection(h){
 }
 
 /* colgroup fijo: anchos iniciales razonables antes del autofit */
-var COL_DEFAULTS=[130,130,150,112,74,60,122,66,80];
+var COL_DEFAULTS=[120,120,110,112,74,60,122,66,80];
 function makeColgroup(){
   return '<colgroup>'+COL_DEFAULTS.map(function(w){
     return '<col style="width:'+w+'px">';
