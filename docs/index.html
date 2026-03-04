@@ -108,6 +108,17 @@ CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
 function fmtN(v){return v==null?'<span style="color:#6e7681">\u2014</span>':v.toLocaleString('es-AR');}
 function fmtCtr(v){return v==null?'<span style="color:#6e7681">\u2014</span>':(v*100).toFixed(3)+'%';}
 function fmtSoi(v){return(v==null||isNaN(v))?'\u2014':(v*100).toFixed(1)+'%';}
+function miniDonut(ros,seg,sz){
+  var tot=ros+seg; if(!tot)return '';
+  var r=(sz-8)/2,cx=sz/2,cy=sz/2,c=2*Math.PI*r;
+  var rl=(ros/tot*c).toFixed(1),sl=(seg/tot*c).toFixed(1),rd=(ros/tot*360-90).toFixed(1);
+  var s='<svg width="'+sz+'" height="'+sz+'" style="display:block">';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#21262d" stroke-width="6"/>';
+  if(ros>0)s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#3fb950" stroke-width="6" stroke-dasharray="'+rl+' '+c.toFixed(1)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
+  if(seg>0)s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#f0883e" stroke-width="6" stroke-dasharray="'+sl+' '+c.toFixed(1)+'" transform="rotate('+rd+' '+cx+' '+cy+')"/>';
+  s+='</svg>';
+  return s;
+}
 
 function setSite(s,btn){
   cSite=s;
@@ -146,15 +157,22 @@ function render(){
   var tC=fd.reduce(function(a,r){return a+r.clk;},0);
   var tLI=new Set(fd.map(function(r){return r.li;})).size;
   var tCm=new Set(fd.map(function(r){return r.camp;})).size;
+  var tRos=fd.filter(function(r){return r.ros;}).length;
   var tSeg=fd.filter(function(r){return !r.ros;}).length;
-  var ratioSeg=tLI>0?Math.round(tSeg/tLI*100):0;
+  var rosPct=tLI>0?Math.round(tRos/tLI*100):0;
+  var segPct=tLI>0?Math.round(tSeg/tLI*100):0;
 
   document.getElementById('summary').innerHTML=
     '<div class="sum-card"><div class="lbl">Impr. (7d)</div><div class="val">'+tI.toLocaleString('es-AR')+'</div><div class="sub">'+cSite+'</div></div>'+
     '<div class="sum-card"><div class="lbl">Clicks (7d)</div><div class="val">'+tC.toLocaleString('es-AR')+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
     '<div class="sum-card"><div class="lbl">Line Items activos</div><div class="val">'+tLI+'</div><div class="sub">activos ahora</div></div>'+
     '<div class="sum-card"><div class="lbl">Campa\u00f1as activas</div><div class="val">'+tCm+'</div><div class="sub">distintas</div></div>'+
-    '<div class="sum-card"><div class="lbl">Mix de Audiencia</div><div class="val">'+ratioSeg+'%</div><div class="sub">'+tSeg+' seg. de '+tLI+' total</div></div>';
+    '<div class="sum-card" style="min-width:160px"><div class="lbl">Segmentaci\u00f3n</div>'+
+    '<div style="display:flex;align-items:center;gap:10px;margin-top:6px">'+
+    miniDonut(tRos,tSeg,52)+
+    '<div><div style="font-size:11px;color:#3fb950">\u25cf ROS &nbsp;'+rosPct+'%</div>'+
+    '<div style="font-size:11px;color:#f0883e">\u25cf Seg. '+segPct+'%</div></div>'+
+    '</div></div>';
 
   var html='';
   CLUSTERS.forEach(function(cl){
