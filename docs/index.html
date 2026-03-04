@@ -211,9 +211,13 @@ function render(){
       var bp=s?Math.round(s*100):0;
       var ow=r.owner||'<span style="color:#6e7681">\u2014</span>';
       var rt=r.ros?'<span class="tag tag-r">ROS</span>':'<span class="tag tag-s">Seg.</span>';
+      var base='https://ads.adminml.com/display/';
+      var qp='accountId='+r.acc_id+'&campaignId='+r.camp+'&advertiserId='+r.adv_id+'&filters=range:15+attribution_metric:action';
+      var liUrl=base+'creatives?'+qp+'&lineItemId='+r.li;
+      var campUrl=base+'lineitems?'+qp;
       return '<tr>'+
-        '<td><span class="id-c">'+r.li+'</span></td>'+
-        '<td><span class="id-c">'+r.camp+'</span></td>'+
+        '<td><a class="id-c" href="'+liUrl+'" target="_blank" style="text-decoration:none">'+r.li+'</a></td>'+
+        '<td><a class="id-c" href="'+campUrl+'" target="_blank" style="text-decoration:none">'+r.camp+'</a></td>'+
         '<td>'+ow+'</td>'+
         '<td class="num">'+fmtN(r.impr)+'</td>'+
         '<td class="num">'+fmtN(r.clk)+'</td>'+
