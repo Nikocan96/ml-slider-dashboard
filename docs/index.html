@@ -101,6 +101,15 @@ const CLUSTERS=[
   {id:'PRIORIDAD_MEDIA',    label:'PRIORIDAD MEDIA',    desc:'PROGRAMMATIC \u00b7 MEDIUM',  color:'#3fb950'},
 ];
 
+const SITE_IDS={
+  'MLA':{acc:1521, adv:746274},
+  'MLB':{acc:1500, adv:755999},
+  'MLM':{acc:1502, adv:746397},
+  'MLC':{acc:1496, adv:745566},
+  'MLU':{acc:1520, adv:746272},
+  'MCO':{acc:1654, adv:746270},
+  'MPE':{acc:1553, adv:746259},
+};
 let cSite='MLA', cFilter='all';
 const sortState={};
 CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
@@ -211,8 +220,11 @@ function render(){
       var bp=s?Math.round(s*100):0;
       var ow=r.owner||'<span style="color:#6e7681">\u2014</span>';
       var rt=r.ros?'<span class="tag tag-r">ROS</span>':'<span class="tag tag-s">Seg.</span>';
+      var sid=SITE_IDS[r.site]||{};
+      var accId=r.acc_id||sid.acc;
+      var advId=r.adv_id||sid.adv;
       var base='https://ads.adminml.com/display/';
-      var qp='accountId='+r.acc_id+'&campaignId='+r.camp+'&advertiserId='+r.adv_id+'&filters=range:15+attribution_metric:action';
+      var qp='accountId='+accId+'&campaignId='+r.camp+'&advertiserId='+advId+'&filters=range:15+attribution_metric:action';
       var liUrl=base+'creatives?'+qp+'&lineItemId='+r.li;
       var campUrl=base+'lineitems?'+qp;
       return '<tr>'+
