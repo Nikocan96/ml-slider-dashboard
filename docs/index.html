@@ -163,7 +163,7 @@ function render(){
   var segPct=tLI>0?Math.round(tSeg/tLI*100):0;
 
   document.getElementById('summary').innerHTML=
-    '<div class="sum-card"><div class="lbl">Impr. (7d)</div><div class="val">'+tI.toLocaleString('es-AR')+'</div><div class="sub">'+cSite+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Impresiones (7d)</div><div class="val">'+tI.toLocaleString('es-AR')+'</div><div class="sub">'+cSite+'</div></div>'+
     '<div class="sum-card"><div class="lbl">Clicks (7d)</div><div class="val">'+tC.toLocaleString('es-AR')+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
     '<div class="sum-card"><div class="lbl">Line Items activos</div><div class="val">'+tLI+'</div><div class="sub">activos ahora</div></div>'+
     '<div class="sum-card"><div class="lbl">Campa\u00f1as activas</div><div class="val">'+tCm+'</div><div class="sub">distintas</div></div>'+
@@ -235,7 +235,7 @@ function render(){
       '<th onclick="sortBy(\''+cid+'\',\'li\')">Line Item</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'camp\')">Campaign</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'owner\')">Owner</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="num">Impr. (7d) \u25be</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="num">Impresiones (7d) \u25be</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="num">Clicks (7d)</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="num">CTR</th>'+
       '<th>Share de Impr.</th>'+
