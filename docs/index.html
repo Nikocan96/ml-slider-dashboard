@@ -265,7 +265,7 @@ fetch('data.json')
     return r.json().then(function(d){return{d:d,lm:lm};});
   })
   .then(function(o){
-    DATA=o.d.data||o.d;
+    DATA=(o.d.data||o.d).map(function(r){r.impr=+r.impr||0;r.clk=+r.clk||0;r.ctr=r.ctr!=null?+r.ctr:null;return r;});
     if(o.lm){lastUpdated=new Date(o.lm).getTime();updateTimeBadge();}
     render();
   })
