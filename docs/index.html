@@ -216,8 +216,8 @@ function render(){
       var liUrl=base+'creatives?'+qp+'&lineItemId='+r.li;
       var campUrl=base+'lineitems?'+qp;
       return '<tr>'+
-        '<td><a class="id-c" href="'+liUrl+'" target="_blank" style="text-decoration:none">'+r.li+'</a></td>'+
-        '<td><a class="id-c" href="'+campUrl+'" target="_blank" style="text-decoration:none">'+r.camp+'</a></td>'+
+        '<td><a class="id-c" href="'+liUrl+'" target="_blank" style="text-decoration:none;white-space:normal;max-width:260px;display:inline-block;line-height:1.3" title="ID: '+r.li+'">'+(r.li_name||r.li)+'</a></td>'+
+        '<td><a class="id-c" href="'+campUrl+'" target="_blank" style="text-decoration:none;white-space:normal;max-width:260px;display:inline-block;line-height:1.3" title="ID: '+r.camp+'">'+(r.camp_name||r.camp)+'</a></td>'+
         '<td>'+ow+'</td>'+
         '<td class="num">'+fmtN(r.impr)+'</td>'+
         '<td class="num">'+fmtN(r.clk)+'</td>'+
