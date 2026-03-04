@@ -227,16 +227,18 @@ function render(){
       var qp='accountId='+accId+'&campaignId='+r.camp+'&advertiserId='+advId+'&filters=range:15+attribution_metric:action';
       var liUrl=base+'creatives?'+qp+'&lineItemId='+r.li;
       var campUrl=base+'lineitems?'+qp;
+      var lnk='text-decoration:none;display:inline-block;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle';
+      var endFmt=r.end?r.end.substring(0,10):'';
       return '<tr>'+
-        '<td><a class="id-c" href="'+liUrl+'" target="_blank" style="text-decoration:none;white-space:normal;max-width:260px;display:inline-block;line-height:1.3" title="ID: '+r.li+'">'+(r.li_name||r.li)+'</a></td>'+
-        '<td><a class="id-c" href="'+campUrl+'" target="_blank" style="text-decoration:none;white-space:normal;max-width:260px;display:inline-block;line-height:1.3" title="ID: '+r.camp+'">'+(r.camp_name||r.camp)+'</a></td>'+
+        '<td style="max-width:210px"><a class="id-c" href="'+liUrl+'" target="_blank" style="'+lnk+'" title="'+(r.li_name||r.li)+'">'+(r.li_name||r.li)+'</a></td>'+
+        '<td style="max-width:210px"><a class="id-c" href="'+campUrl+'" target="_blank" style="'+lnk+'" title="'+(r.camp_name||r.camp)+'">'+(r.camp_name||r.camp)+'</a></td>'+
         '<td>'+ow+'</td>'+
-        '<td class="num">'+fmtN(r.impr)+'</td>'+
-        '<td class="num">'+fmtN(r.clk)+'</td>'+
-        '<td class="num">'+fmtCtr(r.ctr)+'</td>'+
+        '<td class="num" style="width:90px">'+fmtN(r.impr)+'</td>'+
+        '<td class="num" style="width:72px">'+fmtN(r.clk)+'</td>'+
+        '<td class="num" style="width:60px">'+fmtCtr(r.ctr)+'</td>'+
         '<td><div class="bar-wrap"><div class="bar-outer"><div class="bar-inner" style="width:'+bp+'%;background:'+cl.color+'"></div></div><span class="bar-pct">'+fmtSoi(s)+'</span></div></td>'+
-        '<td>'+rt+'</td>'+
-        '<td style="color:#6e7681;font-size:11px">'+r.end+'</td>'+
+        '<td style="width:54px">'+rt+'</td>'+
+        '<td style="color:#6e7681;font-size:11px;width:80px">'+endFmt+'</td>'+
         '</tr>';
     }).join('');
 
@@ -251,12 +253,12 @@ function render(){
       '<th onclick="sortBy(\''+cid+'\',\'li\')">Line Item</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'camp\')">Campaign</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'owner\')">Owner</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="num">Impresiones (7d) \u25be</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="num">Clicks (7d)</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="num">CTR</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="num" style="width:90px">Impresiones (7d) \u25be</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="num" style="width:72px">Clicks (7d)</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="num" style="width:60px">CTR</th>'+
       '<th>Share de Impr.</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'ros\')">Tipo de Audiencia</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'end\')">End Date</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'ros\')" style="width:54px">Audiencia</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'end\')" style="width:80px">Vto.</th>'+
       '</tr></thead><tbody>'+tbody+'</tbody></table></div></div></div>';
   });
   document.getElementById('content').innerHTML=html;
