@@ -105,7 +105,7 @@ let cSite='MLA', cFilter='all';
 const sortState={};
 CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
 
-function fmtN(v){return v==null?'<span style="color:#6e7681">\u2014</span>':v.toLocaleString('es-AR');}
+function fmtN(v){if(v==null)return '<span style="color:#6e7681">\u2014</span>';return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
 function fmtCtr(v){return v==null?'<span style="color:#6e7681">\u2014</span>':(v*100).toFixed(3)+'%';}
 function fmtSoi(v){return(v==null||isNaN(v))?'\u2014':(v*100).toFixed(1)+'%';}
 function miniDonut(ros,seg,sz){
@@ -163,8 +163,8 @@ function render(){
   var segPct=tLI>0?Math.round(tSeg/tLI*100):0;
 
   document.getElementById('summary').innerHTML=
-    '<div class="sum-card"><div class="lbl">Impresiones (7d)</div><div class="val">'+tI.toLocaleString('es-AR')+'</div><div class="sub">'+cSite+'</div></div>'+
-    '<div class="sum-card"><div class="lbl">Clicks (7d)</div><div class="val">'+tC.toLocaleString('es-AR')+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Impresiones (7d)</div><div class="val">'+fmtN(tI)+'</div><div class="sub">'+cSite+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Clicks (7d)</div><div class="val">'+fmtN(tC)+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
     '<div class="sum-card"><div class="lbl">Line Items activos</div><div class="val">'+tLI+'</div><div class="sub">activos ahora</div></div>'+
     '<div class="sum-card"><div class="lbl">Campa\u00f1as activas</div><div class="val">'+tCm+'</div><div class="sub">distintas</div></div>'+
     '<div class="sum-card" style="min-width:160px"><div class="lbl">Segmentaci\u00f3n</div>'+
