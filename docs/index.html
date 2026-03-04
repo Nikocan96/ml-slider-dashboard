@@ -421,7 +421,7 @@ function updateTimeBadge(){
 }
 setInterval(updateTimeBadge,60000);
 
-fetch('data.json')
+fetch('data.json?v='+Date.now())
   .then(function(r){
     var lm=r.headers.get('Last-Modified');
     return r.json().then(function(d){return{d:d,lm:lm};});
