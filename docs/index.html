@@ -23,6 +23,9 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 .fbtn{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 14px;font-size:12px;color:#8b949e;cursor:pointer;transition:all .15s}
 .fbtn:hover{border-color:#58a6ff;color:#c9d1d9}
 .fbtn.active{background:#1f6feb;border-color:#1f6feb;color:#fff;font-weight:700}
+.pbtn{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 14px;font-size:12px;color:#8b949e;cursor:pointer;transition:all .15s}
+.pbtn:hover{border-color:#a371f7;color:#c9d1d9}
+.pbtn.active{background:#6e40c9;border-color:#a371f7;color:#fff;font-weight:700}
 .ros-legend{padding:5px 24px 8px;font-size:11px;color:#6e7681}
 .ros-legend .tr{color:#3fb950;font-weight:700}
 .ros-legend .ts{color:#f0883e;font-weight:700}
@@ -92,7 +95,7 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
 <div class="header">
   <h1>ML_MAIN_SLIDER &middot; Dashboard de Gobernanza</h1>
   <div class="badges">
-    <div class="badge">M&eacute;tricas: <strong>&#x23F1; &Uacute;ltimos 7 d&iacute;as</strong></div>
+    <div class="badge">M&eacute;tricas: <strong id="metrics-badge">&#x23F1; &Uacute;ltimos 7 d&iacute;as</strong></div>
     <div class="badge">Vigencia: <strong>Activos ahora</strong></div>
     <div class="badge">Actualizado: <strong id="upd-ts">cargando&hellip;</strong> &nbsp;&middot;&nbsp; cada hora</div>
   </div>
@@ -112,6 +115,11 @@ body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-seri
   <button class="fbtn active" onclick="setFilter('all',this)">Todos</button>
   <button class="fbtn" onclick="setFilter('ros_only',this)">Solo ROS</button>
   <button class="fbtn" onclick="setFilter('segmented_only',this)">Solo Segmentados</button>
+  <span class="sep">|</span>
+  <span class="lbl">Per&iacute;odo:</span>
+  <button class="pbtn active" onclick="setPeriod('7d',this)">7 d&iacute;as</button>
+  <button class="pbtn" onclick="setPeriod('yd',this)">Ayer</button>
+  <button class="pbtn" onclick="setPeriod('td',this)">Hoy</button>
 </div>
 <div class="ros-legend">
   <span class="tr">ROS</span> = Audiencia abierta / sin segmentaci&oacute;n &nbsp;&middot;&nbsp;
@@ -138,9 +146,13 @@ const SITE_IDS={
   'MCO':{acc:1654, adv:746270},
   'MPE':{acc:1553, adv:746259},
 };
-let cSite='MLA', cFilter='all';
+
+let cSite='MLA', cFilter='all', cPeriod='7d';
 const sortState={};
 CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
+
+const PERIOD_LABELS={'7d':'7d','yd':'Ayer','td':'Hoy'};
+const PERIOD_BADGES={'7d':'\u23f1 \u00DAltimos 7 d\u00EDas','yd':'\ud83d\udcc5 Ayer','td':'\ud83d\udcca Hoy (acum.)'};
 
 /* ── Constraints por columna (índice 0–8) ─────────────────────────────
    flex:true  → se puede reducir proporcionalmente si la tabla desborda
@@ -148,7 +160,7 @@ CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
 const COL_CONF=[
   {min:90,  max:145, flex:true },  // 0  Line Item
   {min:90,  max:145, flex:true },  // 1  Campaign
-  {min:80,  max:130, flex:true },  // 2  Anunciante  ← más angosto, trunca con …
+  {min:80,  max:130, flex:true },  // 2  Anunciante
   {min:98,  max:125, flex:false},  // 3  Impresiones
   {min:62,  max:82,  flex:false},  // 4  Clicks
   {min:48,  max:66,  flex:false},  // 5  CTR
@@ -156,8 +168,6 @@ const COL_CONF=[
   {min:56,  max:74,  flex:false},  // 7  Audiencia
   {min:70,  max:90,  flex:false},  // 8  End Date
 ];
-// Suma de defaults (max clamped) = 155+155+170+125+82+66+138+74+90 = 1055px
-// Suma de mínimos                = 90+90+95+98+62+48+108+56+70  = 717px
 
 /* ── Medición de texto con canvas (sin DOM extra) ── */
 var _mctx=null;
@@ -171,8 +181,8 @@ function _mw(txt,font){
    Mide headers + primeras N filas, aplica constraints y escala si
    la suma supera el ancho disponible del contenedor.                   */
 function autoFitTableColumns(){
-  var CELL_PAD=16;   // padding horizontal total por celda (8px c/lado)
-  var SAMPLE   =20;  // filas a samplear por tabla
+  var CELL_PAD=16;
+  var SAMPLE   =20;
   var FONT_HDR ='600 10px "Segoe UI",system-ui,sans-serif';
   var FONT_ID  ='11px Consolas,monospace';
   var FONT_TXT ='13px "Segoe UI",system-ui,sans-serif';
@@ -192,7 +202,6 @@ function autoFitTableColumns(){
     /* medir headers */
     tbl.querySelectorAll('thead th').forEach(function(th,i){
       if(i>=n)return;
-      /* letter-spacing ~0.5px × chars, factor 1.15 approx */
       var w=_mw(th.textContent.toUpperCase(),FONT_HDR)*1.15+CELL_PAD;
       if(w>ideal[i])ideal[i]=w;
     });
@@ -283,6 +292,14 @@ function setFilter(f,btn){
   btn.classList.add('active');
   render();
 }
+function setPeriod(p,btn){
+  cPeriod=p;
+  document.querySelectorAll('.pbtn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  var badge=document.getElementById('metrics-badge');
+  if(badge)badge.textContent=PERIOD_BADGES[p];
+  render();
+}
 function sortBy(cid,k){
   var s=sortState[cid];
   if(s.key===k)s.dir*=-1;else{s.key=k;s.dir=-1;}
@@ -304,9 +321,20 @@ function makeColgroup(){
 }
 
 function render(){
+  /* normalizar métricas según período */
+  var pImpr=cPeriod==='7d'?'impr':cPeriod==='yd'?'impr_yd':'impr_td';
+  var pClk =cPeriod==='7d'?'clk' :cPeriod==='yd'?'clk_yd' :'clk_td';
+  var pLbl =PERIOD_LABELS[cPeriod];
+
   var fd=DATA.filter(function(r){return r.site===cSite;});
   if(cFilter==='ros_only')fd=fd.filter(function(r){return r.ros;});
   else if(cFilter==='segmented_only')fd=fd.filter(function(r){return !r.ros;});
+
+  /* proyectar métricas del período — todo el código existente sigue usando r.impr/clk/ctr */
+  fd=fd.map(function(r){
+    var i=r[pImpr]||0, c=r[pClk]||0;
+    return Object.assign({},r,{impr:i, clk:c, ctr:i?c/i:null});
+  });
 
   var totals={};
   CLUSTERS.forEach(function(cl){
@@ -323,8 +351,8 @@ function render(){
   var segPct=tLI>0?Math.round(tSeg/tLI*100):0;
 
   document.getElementById('summary').innerHTML=
-    '<div class="sum-card"><div class="lbl">Impresiones (7d)</div><div class="val">'+fmtN(tI)+'</div><div class="sub">'+cSite+'</div></div>'+
-    '<div class="sum-card"><div class="lbl">Clicks (7d)</div><div class="val">'+fmtN(tC)+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Impresiones ('+pLbl+')</div><div class="val">'+fmtN(tI)+'</div><div class="sub">'+cSite+'</div></div>'+
+    '<div class="sum-card"><div class="lbl">Clicks ('+pLbl+')</div><div class="val">'+fmtN(tC)+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
     '<div class="sum-card"><div class="lbl">Line Items activos</div><div class="val">'+tLI+'</div><div class="sub">activos ahora</div></div>'+
     '<div class="sum-card"><div class="lbl">Campa\u00f1as activas</div><div class="val">'+tCm+'</div><div class="sub">distintas</div></div>'+
     '<div class="sum-card" style="min-width:160px"><div class="lbl">Segmentaci\u00f3n</div>'+
@@ -399,8 +427,8 @@ function render(){
       '<th onclick="sortBy(\''+cid+'\',\'li\')">Line Item</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'camp\')">Campaign</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'owner\')">Anunciante</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="c-num">Impresiones (7d) \u25be</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="c-num">Clicks (7d)</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="c-num">Impresiones ('+pLbl+') \u25be</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="c-num">Clicks ('+pLbl+')</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="c-num">CTR</th>'+
       '<th>Share de Impr.</th>'+
       '<th onclick="sortBy(\''+cid+'\',\'ros\')">Audiencia</th>'+
@@ -427,7 +455,13 @@ fetch('data.json?v='+Date.now())
     return r.json().then(function(d){return{d:d,lm:lm};});
   })
   .then(function(o){
-    DATA=(o.d.data||o.d).map(function(r){r.impr=+r.impr||0;r.clk=+r.clk||0;r.ctr=r.ctr!=null?+r.ctr:null;return r;});
+    DATA=(o.d.data||o.d).map(function(r){
+      r.impr=+r.impr||0; r.clk=+r.clk||0;
+      r.ctr=r.ctr!=null?+r.ctr:null;
+      r.impr_yd=+r.impr_yd||0; r.clk_yd=+r.clk_yd||0;
+      r.impr_td=+r.impr_td||0; r.clk_td=+r.clk_td||0;
+      return r;
+    });
     if(o.lm){lastUpdated=new Date(o.lm).getTime();updateTimeBadge();}
     render();
   })
