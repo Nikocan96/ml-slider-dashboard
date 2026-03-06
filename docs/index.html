@@ -561,29 +561,20 @@ function miniDonut(ros,seg,sz){
 
 }
 
+
+
+
 function miniDonutC(a,b,colA,colB,sz){
-
   var tot=a+b; if(!tot)return '';
-
   var r=(sz-8)/2,cx=sz/2,cy=sz/2,c=2*Math.PI*r;
-
   var al=(a/tot*c).toFixed(1),bl=(b/tot*c).toFixed(1),rd=(a/tot*360-90).toFixed(1);
-
   var s='<svg width="'+sz+'" height="'+sz+'" style="display:block">';
-
   s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#21262d" stroke-width="6"/>';
-
   if(a>0)s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+colA+'" stroke-width="6" stroke-dasharray="'+al+' '+c.toFixed(1)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
-
   if(b>0)s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+colB+'" stroke-width="6" stroke-dasharray="'+bl+' '+c.toFixed(1)+'" transform="rotate('+rd+' '+cx+' '+cy+')"/>';
-
   s+='</svg>';
-
   return s;
-
 }
-
-
 
 function setSite(s,btn){
 
@@ -722,25 +713,13 @@ function render(){
   var rosPct=tLI>0?Math.round(tRos/tLI*100):0;
 
   var segPct=tLI>0?Math.round(tSeg/tLI*100):0;
-
-  var fdNonP0=fd.filter(function(r){return r.c!=='PRIORIDAD_0';});
-
-  var tLINonP0=fdNonP0.length;
-
-  var tPraia=fdNonP0.filter(function(r){return (r.li_name||'').toUpperCase().indexOf('PRAIA')>=0;}).length;
-
-  var tNoPraia=tLINonP0-tPraia;
-
-  var praiaPct=tLINonP0>0?Math.round(tPraia/tLINonP0*100):0;
-
-  var noPraiaPct=tLINonP0>0?Math.round(tNoPraia/tLINonP0*100):0;
-
   var fdNonP0=fd.filter(function(r){return r.c!=='PRIORIDAD_0';});
   var tLINonP0=fdNonP0.length;
   var tPraia=fdNonP0.filter(function(r){return (r.li_name||'').toUpperCase().indexOf('PRAIA')>=0;}).length;
   var tNoPraia=tLINonP0-tPraia;
   var praiaPct=tLINonP0>0?Math.round(tPraia/tLINonP0*100):0;
   var noPraiaPct=tLINonP0>0?Math.round(tNoPraia/tLINonP0*100):0;
+
 
 
 
@@ -764,19 +743,13 @@ function render(){
 
     '<div style="font-size:11px;color:#f0883e">\u25cf Seg. '+segPct+'%</div></div>'+
 
-    '</div></div>'+
-
+    '</div></div>+
     '<div class="sum-card" style="min-width:160px"><div class="lbl">Piezas Praia (sin P0)</div>'+
-
     '<div style="display:flex;align-items:center;gap:10px;margin-top:6px">'+
-
     miniDonutC(tPraia,tNoPraia,'#79c0ff','#484f58',52)+
-
-    '<div><div style="font-size:11px;color:#79c0ff">● Praia '+praiaPct+'% ('+tPraia+')</div>'+
-
-    '<div style="font-size:11px;color:#8b949e">● Otras '+noPraiaPct+'% ('+tNoPraia+')</div></div>'+
-
-    '</div></div>';
+    '<div><div style="font-size:11px;color:#79c0ff">\u25cf Praia '+praiaPct+'% ('+tPraia+')</div>'+
+    '<div style="font-size:11px;color:#8b949e">\u25cf Otras '+noPraiaPct+'% ('+tNoPraia+')</div></div>'+
+    '</div></div>'';
 
 
 
@@ -881,8 +854,7 @@ function render(){
         '<td class="c-tag">'+rt+'</td>'+
 
         '<td class="c-date">'+endFmt+'</td>'+
-
-        '<td class="c-tag">'+(((r.li_name||'').toUpperCase().indexOf('PRAIA')>=0)?'<span class="tag" style="background:#1a3352;color:#79c0ff">SÍ</span>':'<span class="tag" style="background:#21262d;color:#6e7681">NO</span>')+'</td>'+
+        '<td class="c-tag">'+((r.praia)?'<span class="tag" style="background:#1a3352;color:#79c0ff">S\u00cd</span>':'<span class="tag" style="background:#21262d;color:#6e7681">NO</span>')+'</td>'+
 
         '</tr>';
 
@@ -923,8 +895,7 @@ function render(){
       '<th onclick="sortBy(\''+cid+'\',\'ros\')">Audiencia</th>'+
 
       '<th onclick="sortBy(\''+cid+'\',\'end\')">End Date</th>'+
-
-      '<th onclick="sortBy(''+cid+'','praia')" style="text-align:center">Praia</th>'+
+      '<th onclick="sortBy(\''+cid+'\',\'praia\')" style="text-align:center">Praia</th>'+
 
       '</tr></thead><tbody>'+tbody+'</tbody></table></div></div></div>';
 
@@ -979,7 +950,6 @@ fetch('data.json?v='+Date.now())
       r.impr_yd=+r.impr_yd||0; r.clk_yd=+r.clk_yd||0;
 
       r.impr_td=+r.impr_td||0; r.clk_td=+r.clk_td||0;
-
       r.praia=(r.li_name||'').toUpperCase().indexOf('PRAIA')>=0?1:0;
 
       return r;
