@@ -1,568 +1,285 @@
 <!DOCTYPE html>
-
 <html lang="es">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width,initial-scale=1">
-
 <title>MAIN SLIDERS ACTIVOS &middot; Dashboard de Control</title>
-
 <style>
-
 *{box-sizing:border-box;margin:0;padding:0}
-
 body{background:#0d1117;color:#c9d1d9;font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;overflow-x:hidden}
-
 .header{background:#161b22;border-bottom:1px solid #21262d;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-
 .header h1{font-size:16px;font-weight:700;color:#e6edf3;white-space:nowrap}
-
 .header h1 span{color:#58a6ff}
-
 .badges{display:flex;gap:8px;flex-wrap:wrap;flex:1}
-
 .badge{background:#21262d;border:1px solid #30363d;border-radius:4px;padding:3px 10px;font-size:11px;color:#8b949e}
-
 .badge strong{color:#58a6ff}
-
 .team-tag{background:#2a2500;border:1px solid #ffe600;border-radius:4px;padding:3px 10px;font-size:12px;color:#ffe600;font-weight:600;white-space:nowrap}
-
 .filter-row{padding:10px 24px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #21262d}
-
 .filter-row .lbl{color:#8b949e;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-right:2px}
-
 .sep{color:#30363d;font-size:18px;margin:0 6px}
-
 .sbtn{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:5px 14px;font-size:12px;color:#8b949e;cursor:pointer;transition:all .15s}
-
 .sbtn:hover{border-color:#58a6ff;color:#c9d1d9}
-
 .sbtn.active{background:#238636;border-color:#2ea043;color:#fff;font-weight:700}
-
 .fbtn{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 14px;font-size:12px;color:#8b949e;cursor:pointer;transition:all .15s}
-
 .fbtn:hover{border-color:#58a6ff;color:#c9d1d9}
-
 .fbtn.active{background:#1f6feb;border-color:#1f6feb;color:#fff;font-weight:700}
-
 .pbtn{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:5px 14px;font-size:12px;color:#8b949e;cursor:pointer;transition:all .15s}
-
 .pbtn:hover{border-color:#a371f7;color:#c9d1d9}
-
 .pbtn.active{background:#6e40c9;border-color:#a371f7;color:#fff;font-weight:700}
-
 .ros-legend{padding:5px 24px 8px;font-size:11px;color:#6e7681}
-
 .ros-legend .tr{color:#3fb950;font-weight:700}
-
 .ros-legend .ts{color:#f0883e;font-weight:700}
-
 .summary{display:flex;gap:12px;padding:12px 24px;flex-wrap:wrap}
-
 .sum-card{background:#161b22;border:1px solid #21262d;border-radius:8px;padding:10px 16px;min-width:140px}
-
 .sum-card .lbl{font-size:10px;color:#6e7681;text-transform:uppercase;letter-spacing:.5px}
-
 .sum-card .val{font-size:20px;font-weight:700;color:#e6edf3;margin-top:2px}
-
 .sum-card .sub{font-size:10px;color:#6e7681;margin-top:1px}
-
 .section{margin:0 24px 20px}
-
 .sh{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px solid;cursor:pointer;user-select:none}
-
 .sh h2{font-size:13px;font-weight:700}
-
 .sh .desc{font-size:11px;color:#6e7681;margin-left:4px}
-
 .sh .cnt{font-size:11px;color:#6e7681;margin-left:auto}
-
 .sh .arr{font-size:10px;color:#6e7681;transition:transform .2s}
-
 .sh.collapsed .arr{transform:rotate(-90deg)}
 
-
-
 /* ── Tabla: sin scroll horizontal ── */
-
 .tbl-wrap{overflow:hidden;width:100%}
-
 .tbl{width:100%;border-collapse:collapse;table-layout:fixed}
 
-
-
 /* Cabeceras */
-
 .tbl th{
-
   background:#161b22;color:#6e7681;font-size:10px;text-transform:uppercase;
-
   letter-spacing:.5px;padding:6px 8px;text-align:left;border-bottom:1px solid #21262d;
-
   white-space:nowrap;cursor:pointer;overflow:hidden;text-overflow:ellipsis
-
 }
-
 .tbl th:hover{color:#c9d1d9}
-
 .tbl th.c-num{text-align:right}
 
-
-
 /* Celdas base */
-
 .tbl td{padding:5px 8px;border-bottom:1px solid #21262d;overflow:hidden}
-
 .tbl tr:hover td{background:#1c2128}
-
 .tbl tr:last-child td{border-bottom:none}
 
-
-
 /* Variantes por tipo de columna */
-
 .tbl td.c-trunc{white-space:nowrap;text-overflow:ellipsis}
-
 .tbl td.c-num{
-
   white-space:nowrap;text-align:right;
-
   font-variant-numeric:tabular-nums;font-family:'Consolas',monospace
-
 }
-
 .tbl td.c-bar,.tbl td.c-tag,.tbl td.c-date{white-space:nowrap}
-
 .tbl td.c-date{color:#6e7681;font-size:11px}
 
-
-
 /* Span truncado dentro de celda */
-
 .trunc-span{
-
   display:block;overflow:hidden;text-overflow:ellipsis;
-
   white-space:nowrap;font-family:'Consolas',monospace;
-
   font-size:11px;color:#58a6ff
-
 }
-
-
 
 .num{text-align:right;font-variant-numeric:tabular-nums;font-family:'Consolas',monospace}
-
 .tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600}
-
 .tag-r{background:#1a3d2b;color:#3fb950}
-
 .tag-s{background:#3d2a0e;color:#f0883e}
-
 .bar-wrap{display:flex;align-items:center;gap:4px}
-
 .bar-outer{width:46px;height:6px;background:#21262d;border-radius:3px;flex-shrink:0}
-
 .bar-inner{height:6px;border-radius:3px}
-
 .bar-pct{font-size:10px;color:#8b949e;min-width:28px;white-space:nowrap}
-
 .no-data{padding:18px 0;color:#6e7681;font-style:italic;font-size:12px}
 
-
-
 ::-webkit-scrollbar{width:6px;height:6px}
-
 ::-webkit-scrollbar-track{background:#0d1117}
-
 ::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
-
 </style>
-
 </head>
-
 <body>
-
 <div class="header">
-
   <h1>MAIN SLIDERS ACTIVOS &middot; Dashboard de Control</h1>
-
   <div class="badges">
-
     <div class="badge">M&eacute;tricas: <strong id="metrics-badge">&#x23F1; &Uacute;ltimos 7 d&iacute;as</strong></div>
-
     <div class="badge">Vigencia: <strong>Activos ahora</strong></div>
-
     <div class="badge">Actualizado: <strong id="upd-ts">cargando&hellip;</strong> &nbsp;&middot;&nbsp; cada hora</div>
-
   </div>
-
   <div class="team-tag">Producto &middot; Site Merch</div>
-
 </div>
-
 <div class="filter-row">
-
   <span class="lbl">Site:</span>
-
   <button class="sbtn active" onclick="setSite('MLA',this)">MLA</button>
-
   <button class="sbtn" onclick="setSite('MLB',this)">MLB</button>
-
   <button class="sbtn" onclick="setSite('MLM',this)">MLM</button>
-
   <button class="sbtn" onclick="setSite('MLC',this)">MLC</button>
-
   <button class="sbtn" onclick="setSite('MLU',this)">MLU</button>
-
   <button class="sbtn" onclick="setSite('MCO',this)">MCO</button>
-
   <button class="sbtn" onclick="setSite('MPE',this)">MPE</button>
-
   <span class="sep">|</span>
-
   <span class="lbl">Audiencia:</span>
-
   <button class="fbtn active" onclick="setFilter('all',this)">Todos</button>
-
   <button class="fbtn" onclick="setFilter('ros_only',this)">Solo ROS</button>
-
   <button class="fbtn" onclick="setFilter('segmented_only',this)">Solo Segmentados</button>
-
   <span class="sep">|</span>
-
   <span class="lbl">Per&iacute;odo:</span>
-
   <button class="pbtn active" onclick="setPeriod('7d',this)">7 d&iacute;as</button>
-
   <button class="pbtn" onclick="setPeriod('yd',this)">Ayer</button>
-
   <button class="pbtn" onclick="setPeriod('td',this)">Hoy</button>
-
 </div>
-
 <div class="ros-legend">
-
   <span class="tr">ROS</span> = Audiencia abierta / sin segmentaci&oacute;n &nbsp;&middot;&nbsp;
-
   <span class="ts">Seg.</span> = Con segmentaci&oacute;n (DMP, audiencia, contexto o geo)
-
 </div>
-
 <div class="summary" id="summary"></div>
-
 <div id="content"></div>
-
 <script>
-
 let DATA=[];
 
-
-
 const CLUSTERS=[
-
   {id:'PRIORIDAD_0',        label:'PRIORIDAD 0',        desc:'GUARANTEED',                  color:'#a371f7'},
-
   {id:'PRIORIDAD_PRINCIPAL',label:'PRIORIDAD PRINCIPAL',desc:'PROGRAMMATIC \u00b7 PRIMARY', color:'#f0883e'},
-
   {id:'PRIORIDAD_ALTA',     label:'PRIORIDAD ALTA',     desc:'PROGRAMMATIC \u00b7 HIGH',    color:'#58a6ff'},
-
   {id:'PRIORIDAD_MEDIA',    label:'PRIORIDAD MEDIA',    desc:'PROGRAMMATIC \u00b7 MEDIUM',  color:'#3fb950'},
-
 ];
-
-
 
 const SITE_IDS={
-
   'MLA':{acc:1521, adv:746274},
-
   'MLB':{acc:1500, adv:755999},
-
   'MLM':{acc:1502, adv:746397},
-
   'MLC':{acc:1496, adv:745566},
-
   'MLU':{acc:1520, adv:746272},
-
   'MCO':{acc:1654, adv:746270},
-
   'MPE':{acc:1553, adv:746259},
-
 };
 
-
-
 let cSite='MLA', cFilter='all', cPeriod='7d';
-
 const sortState={};
-
 CLUSTERS.forEach(function(cl){sortState[cl.id]={key:null,dir:-1};});
 
-
-
 const PERIOD_LABELS={'7d':'7d','yd':'Ayer','td':'Hoy'};
-
 const PERIOD_BADGES={'7d':'\u23f1 \u00DAltimos 7 d\u00EDas','yd':'\ud83d\udcc5 Ayer','td':'\ud83d\udcca Hoy (acum.)'};
 
-
-
 /* ── Constraints por columna (índice 0–8) ─────────────────────────────
-
    flex:true  → se puede reducir proporcionalmente si la tabla desborda
-
    flex:false → se respeta su rango min/max sin reducción extra          */
-
 const COL_CONF=[
-
   {min:90,  max:145, flex:true },  // 0  Line Item
-
   {min:90,  max:145, flex:true },  // 1  Campaign
-
   {min:80,  max:130, flex:true },  // 2  Anunciante
-
   {min:98,  max:125, flex:false},  // 3  Impresiones
-
   {min:62,  max:82,  flex:false},  // 4  Clicks
-
   {min:48,  max:66,  flex:false},  // 5  CTR
-
   {min:108, max:138, flex:false},  // 6  Share de Impr.
-
   {min:56,  max:74,  flex:false},  // 7  Audiencia
-
   {min:70,  max:90,  flex:false},  // 8  End Date
   {min:50,  max:66,  flex:false},  // 9  Praia
-
 ];
 
-
-
 /* ── Medición de texto con canvas (sin DOM extra) ── */
-
 var _mctx=null;
-
 function _mw(txt,font){
-
   if(!_mctx){var c=document.createElement('canvas');_mctx=c.getContext('2d');}
-
   _mctx.font=font;
-
   return _mctx.measureText(String(txt||'')).width;
-
 }
 
-
-
 /* ── autoFitTableColumns ──────────────────────────────────────────────
-
    Mide headers + primeras N filas, aplica constraints y escala si
-
    la suma supera el ancho disponible del contenedor.                   */
-
 function autoFitTableColumns(){
-
   var CELL_PAD=16;
-
   var SAMPLE   =20;
-
   var FONT_HDR ='600 10px "Segoe UI",system-ui,sans-serif';
-
   var FONT_ID  ='11px Consolas,monospace';
-
   var FONT_TXT ='13px "Segoe UI",system-ui,sans-serif';
 
-
-
   document.querySelectorAll('.tbl').forEach(function(tbl){
-
     var cols=tbl.querySelectorAll('col');
-
     if(!cols.length)return;
-
     var n=cols.length;
 
-
-
     /* ancho disponible del contenedor */
-
     var wrap=tbl.closest('.tbl-wrap')||tbl.parentElement;
-
     var avail=wrap?wrap.getBoundingClientRect().width:0;
-
     if(avail<200)avail=document.documentElement.clientWidth-48;
-
-
 
     var ideal=new Array(n).fill(0);
 
-
-
     /* medir headers */
-
     tbl.querySelectorAll('thead th').forEach(function(th,i){
-
       if(i>=n)return;
-
       var w=_mw(th.textContent.toUpperCase(),FONT_HDR)*1.15+CELL_PAD;
-
       if(w>ideal[i])ideal[i]=w;
-
     });
-
-
 
     /* medir filas (sample) */
-
     var rows=tbl.querySelectorAll('tbody tr');
-
     var limit=Math.min(rows.length,SAMPLE);
-
     for(var j=0;j<limit;j++){
-
       var cells=rows[j].querySelectorAll('td');
-
       for(var i=0;i<n&&i<cells.length;i++){
-
         var font=(i<=1)?FONT_ID:FONT_TXT;
-
         var w=_mw(cells[i].textContent,font)+CELL_PAD;
-
         if(w>ideal[i])ideal[i]=w;
-
       }
-
     }
-
-
 
     /* clamp a constraints */
-
     var clamped=ideal.map(function(w,i){
-
       var c=COL_CONF[i]||{min:80,max:200,flex:true};
-
       return Math.max(c.min,Math.min(c.max,Math.ceil(w)));
-
     });
-
-
 
     /* si la suma excede el espacio, reducir columnas flex proporcionalmente */
-
     var total=clamped.reduce(function(s,w){return s+w;},0);
-
     if(total>avail){
-
       var excess=total-avail;
-
       var flexIdx=[],flexRoom=0;
-
       clamped.forEach(function(w,i){
-
         var c=COL_CONF[i]||{min:80,max:200,flex:true};
-
         if(c.flex){flexIdx.push(i);flexRoom+=(w-c.min);}
-
       });
-
       if(flexRoom>0){
-
         var cut=Math.min(excess,flexRoom);
-
         flexIdx.forEach(function(i){
-
           var c=COL_CONF[i];
-
           var share=(clamped[i]-c.min)/flexRoom;
-
           clamped[i]=Math.max(c.min,Math.floor(clamped[i]-cut*share));
-
         });
-
       }
-
     }
 
-
-
     /* aplicar widths a <col> */
-
     clamped.forEach(function(w,i){
-
       if(cols[i])cols[i].style.width=w+'px';
-
     });
-
   });
-
 }
-
-
 
 /* resize con debounce 200ms */
-
 var _rtimer=null;
-
 window.addEventListener('resize',function(){
-
   clearTimeout(_rtimer);
-
   _rtimer=setTimeout(autoFitTableColumns,200);
-
 });
 
-
-
 /* ── helpers ── */
-
 function fmtN(v){
-
   if(v==null)return '<span style="color:#6e7681">\u2014</span>';
-
   return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');
-
 }
-
 function fmtCtr(v){
-
   return v==null?'<span style="color:#6e7681">\u2014</span>':(v*100).toFixed(3)+'%';
-
 }
-
 function fmtSoi(v){
-
   return(v==null||isNaN(v))?'\u2014':(v*100).toFixed(1)+'%';
-
 }
-
 function miniDonut(ros,seg,sz){
-
   var tot=ros+seg; if(!tot)return '';
-
   var r=(sz-8)/2,cx=sz/2,cy=sz/2,c=2*Math.PI*r;
-
   var rl=(ros/tot*c).toFixed(1),sl=(seg/tot*c).toFixed(1),rd=(ros/tot*360-90).toFixed(1);
-
   var s='<svg width="'+sz+'" height="'+sz+'" style="display:block">';
-
   s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#21262d" stroke-width="6"/>';
-
   if(ros>0)s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#3fb950" stroke-width="6" stroke-dasharray="'+rl+' '+c.toFixed(1)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
-
   if(seg>0)s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#f0883e" stroke-width="6" stroke-dasharray="'+sl+' '+c.toFixed(1)+'" transform="rotate('+rd+' '+cx+' '+cy+')"/>';
-
   s+='</svg>';
-
   return s;
-
 }
-
-
-
 
 function miniDonutC(a,b,colA,colB,sz){
   var tot=a+b; if(!tot)return '';
@@ -577,141 +294,73 @@ function miniDonutC(a,b,colA,colB,sz){
 }
 
 function setSite(s,btn){
-
   cSite=s;
-
   document.querySelectorAll('.sbtn').forEach(function(b){b.classList.remove('active');});
-
   btn.classList.add('active');
-
   render();
-
 }
-
 function setFilter(f,btn){
-
   cFilter=f;
-
   document.querySelectorAll('.fbtn').forEach(function(b){b.classList.remove('active');});
-
   btn.classList.add('active');
-
   render();
-
 }
-
 function setPeriod(p,btn){
-
   cPeriod=p;
-
   document.querySelectorAll('.pbtn').forEach(function(b){b.classList.remove('active');});
-
   btn.classList.add('active');
-
   var badge=document.getElementById('metrics-badge');
-
   if(badge)badge.textContent=PERIOD_BADGES[p];
-
   render();
-
 }
-
 function sortBy(cid,k){
-
   var s=sortState[cid];
-
   if(s.key===k)s.dir*=-1;else{s.key=k;s.dir=-1;}
-
   render();
-
 }
-
 function toggleSection(h){
-
   h.classList.toggle('collapsed');
-
   var b=h.nextElementSibling;
-
   b.style.display=b.style.display==='none'?'':'none';
-
   autoFitTableColumns();
-
 }
-
-
 
 /* colgroup fijo: anchos iniciales razonables antes del autofit */
-
 var COL_DEFAULTS=[120,120,110,112,74,60,122,66,80,58];
-
 function makeColgroup(){
-
   return '<colgroup>'+COL_DEFAULTS.map(function(w){
-
     return '<col style="width:'+w+'px">';
-
   }).join('')+'</colgroup>';
-
 }
 
-
-
 function render(){
-
   /* normalizar métricas según período */
-
   var pImpr=cPeriod==='7d'?'impr':cPeriod==='yd'?'impr_yd':'impr_td';
-
   var pClk =cPeriod==='7d'?'clk' :cPeriod==='yd'?'clk_yd' :'clk_td';
-
   var pLbl =PERIOD_LABELS[cPeriod];
 
-
-
   var fd=DATA.filter(function(r){return r.site===cSite;});
-
   if(cFilter==='ros_only')fd=fd.filter(function(r){return r.ros;});
-
   else if(cFilter==='segmented_only')fd=fd.filter(function(r){return !r.ros;});
 
-
-
   /* proyectar métricas del período — todo el código existente sigue usando r.impr/clk/ctr */
-
   fd=fd.map(function(r){
-
     var i=r[pImpr]||0, c=r[pClk]||0;
-
     return Object.assign({},r,{impr:i, clk:c, ctr:i?c/i:null});
-
   });
-
-
 
   var totals={};
-
   CLUSTERS.forEach(function(cl){
-
     totals[cl.id]=fd.filter(function(r){return r.c===cl.id;}).reduce(function(a,r){return a+r.impr;},0);
-
   });
 
-
-
   var tI=fd.reduce(function(a,r){return a+r.impr;},0);
-
   var tC=fd.reduce(function(a,r){return a+r.clk;},0);
-
   var tLI=new Set(fd.map(function(r){return r.li;})).size;
-
   var tCm=new Set(fd.map(function(r){return r.camp;})).size;
-
   var tRos=fd.filter(function(r){return r.ros;}).length;
-
   var tSeg=fd.filter(function(r){return !r.ros;}).length;
-
   var rosPct=tLI>0?Math.round(tRos/tLI*100):0;
-
   var segPct=tLI>0?Math.round(tSeg/tLI*100):0;
   var fdNonP0=fd.filter(function(r){return r.c!=='PRIORIDAD_0';});
   var tLINonP0=fdNonP0.length;
@@ -720,30 +369,17 @@ function render(){
   var praiaPct=tLINonP0>0?Math.round(tPraia/tLINonP0*100):0;
   var noPraiaPct=tLINonP0>0?Math.round(tNoPraia/tLINonP0*100):0;
 
-
-
-
   document.getElementById('summary').innerHTML=
-
     '<div class="sum-card"><div class="lbl">Impresiones ('+pLbl+')</div><div class="val">'+fmtN(tI)+'</div><div class="sub">'+cSite+'</div></div>'+
-
     '<div class="sum-card"><div class="lbl">Clicks ('+pLbl+')</div><div class="val">'+fmtN(tC)+'</div><div class="sub">CTR '+(tI?((tC/tI)*100).toFixed(3)+'%':'\u2014')+'</div></div>'+
-
     '<div class="sum-card"><div class="lbl">Line Items activos</div><div class="val">'+tLI+'</div><div class="sub">activos ahora</div></div>'+
-
     '<div class="sum-card"><div class="lbl">Campa\u00f1as activas</div><div class="val">'+tCm+'</div><div class="sub">distintas</div></div>'+
-
     '<div class="sum-card" style="min-width:160px"><div class="lbl">Segmentaci\u00f3n</div>'+
-
     '<div style="display:flex;align-items:center;gap:10px;margin-top:6px">'+
-
     miniDonut(tRos,tSeg,52)+
-
     '<div><div style="font-size:11px;color:#3fb950">\u25cf ROS &nbsp;'+rosPct+'%</div>'+
-
     '<div style="font-size:11px;color:#f0883e">\u25cf Seg. '+segPct+'%</div></div>'+
-
-    '</div></div>+
+    '</div></div>'+
     '<div class="sum-card" style="min-width:160px"><div class="lbl">Piezas Praia (sin P0)</div>'+
     '<div style="display:flex;align-items:center;gap:10px;margin-top:6px">'+
     miniDonutC(tPraia,tNoPraia,'#79c0ff','#484f58',52)+
@@ -751,222 +387,113 @@ function render(){
     '<div style="font-size:11px;color:#8b949e">\u25cf Otras '+noPraiaPct+'% ('+tNoPraia+')</div></div>'+
     '</div></div>';
 
-
-
   var html='';
-
   CLUSTERS.forEach(function(cl){
-
     var rows=fd.filter(function(r){return r.c===cl.id;});
-
     if(!rows.length){
-
       if(cl.id==='PRIORIDAD_0'){
-
         html+='<div class="section">'+
-
           '<div class="sh" style="border-color:'+cl.color+'" onclick="toggleSection(this)">'+
-
           '<div style="width:8px;height:8px;border-radius:50%;background:'+cl.color+';flex-shrink:0"></div>'+
-
           '<h2 style="color:'+cl.color+'">'+cl.label+'</h2>'+
-
           '<span class="desc">'+cl.desc+'</span>'+
-
           '<span class="cnt">0 line items</span>'+
-
           '<span class="arr">\u25bc</span></div>'+
-
           '<div><div class="no-data">Sin campa\u00f1as GUARANTEED activas en '+cSite+'.</div></div></div>';
-
       }
-
       return;
-
     }
-
-
 
     var ss=sortState[cl.id];
-
     var sorted=rows.slice();
-
     if(ss.key){
-
       sorted.sort(function(a,b){
-
         var av=a[ss.key],bv=b[ss.key];
-
         if(av==null)av=ss.dir>0?-Infinity:Infinity;
-
         if(bv==null)bv=ss.dir>0?-Infinity:Infinity;
-
         return(av>bv?1:av<bv?-1:0)*ss.dir;
-
       });
-
     }else{
-
       sorted.sort(function(a,b){return b.impr-a.impr;});
-
     }
 
-
-
     var ct=totals[cl.id];
-
     var cid=cl.id;
 
-
-
     var tbody=sorted.map(function(r){
-
       var s=(ct>0&&r.impr>0)?r.impr/ct:null;
-
       var bp=s?Math.round(s*100):0;
-
       var liLabel =r.li_name||r.li||'';
-
       var campLabel=r.camp_name||r.camp||'';
-
       var owLabel  =r.owner||'\u2014';
-
       var rt=r.ros?'<span class="tag tag-r">ROS</span>':'<span class="tag tag-s">Seg.</span>';
-
       var endFmt=r.end?r.end.substring(0,10):'';
-
       return '<tr>'+
-
         '<td class="c-trunc"><span class="trunc-span" title="'+liLabel+'">'+liLabel+'</span></td>'+
-
         '<td class="c-trunc"><span class="trunc-span" title="'+campLabel+'">'+campLabel+'</span></td>'+
-
         '<td class="c-trunc" style="font-size:12px" title="'+owLabel+'">'+owLabel+'</td>'+
-
         '<td class="c-num">'+fmtN(r.impr)+'</td>'+
-
         '<td class="c-num">'+fmtN(r.clk)+'</td>'+
-
         '<td class="c-num">'+fmtCtr(r.ctr)+'</td>'+
-
         '<td class="c-bar"><div class="bar-wrap"><div class="bar-outer"><div class="bar-inner" style="width:'+bp+'%;background:'+cl.color+'"></div></div><span class="bar-pct">'+fmtSoi(s)+'</span></div></td>'+
-
         '<td class="c-tag">'+rt+'</td>'+
-
         '<td class="c-date">'+endFmt+'</td>'+
-        '<td class="c-tag">'+((r.praia)?'<span class="tag" style="background:#1a3352;color:#79c0ff">S\u00cd</span>':'<span class="tag" style="background:#21262d;color:#6e7681">NO</span>')+'</td>'+
-
+        '<td class="c-tag">'+(r.praia?'<span class="tag" style="background:#1a3352;color:#79c0ff">S\u00cd</span>':'<span class="tag" style="background:#21262d;color:#6e7681">NO</span>')+'</td>'+
         '</tr>';
-
     }).join('');
 
-
-
     html+='<div class="section">'+
-
       '<div class="sh" style="border-color:'+cl.color+'" onclick="toggleSection(this)">'+
-
       '<div style="width:8px;height:8px;border-radius:50%;background:'+cl.color+';flex-shrink:0"></div>'+
-
       '<h2 style="color:'+cl.color+'">'+cl.label+'</h2>'+
-
       '<span class="desc">'+cl.desc+'</span>'+
-
       '<span class="cnt">'+rows.length+' line item'+(rows.length!==1?'s':'')+'</span>'+
-
       '<span class="arr">\u25bc</span></div>'+
-
       '<div><div class="tbl-wrap"><table class="tbl">'+makeColgroup()+'<thead><tr>'+
-
       '<th onclick="sortBy(\''+cid+'\',\'li\')">Line Item</th>'+
-
       '<th onclick="sortBy(\''+cid+'\',\'camp\')">Campaign</th>'+
-
       '<th onclick="sortBy(\''+cid+'\',\'owner\')">Anunciante</th>'+
-
       '<th onclick="sortBy(\''+cid+'\',\'impr\')" class="c-num">Impresiones ('+pLbl+') \u25be</th>'+
-
       '<th onclick="sortBy(\''+cid+'\',\'clk\')" class="c-num">Clicks ('+pLbl+')</th>'+
-
       '<th onclick="sortBy(\''+cid+'\',\'ctr\')" class="c-num">CTR</th>'+
-
       '<th>Share de Impr.</th>'+
-
       '<th onclick="sortBy(\''+cid+'\',\'ros\')">Audiencia</th>'+
-
       '<th onclick="sortBy(\''+cid+'\',\'end\')">End Date</th>'+
-      '<th onclick="sortBy(\''+cid+'\',\'praia\')" style="text-align:center">Praia</th>'+
-
+      '<th style="text-align:center">Praia</th>'+
       '</tr></thead><tbody>'+tbody+'</tbody></table></div></div></div>';
-
   });
 
-
-
   document.getElementById('content').innerHTML=html;
-
   autoFitTableColumns();
-
 }
-
-
 
 var lastUpdated=null;
-
 function updateTimeBadge(){
-
   var el=document.getElementById('upd-ts');
-
   if(!el||!lastUpdated)return;
-
   var mins=Math.floor((Date.now()-lastUpdated)/60000);
-
   el.textContent=mins<=0?'hace menos de 1 min':'hace '+mins+(mins===1?' minuto':' minutos');
-
 }
-
 setInterval(updateTimeBadge,60000);
 
-
-
 fetch('data.json?v='+Date.now())
-
   .then(function(r){
-
     var lm=r.headers.get('Last-Modified');
-
     return r.json().then(function(d){return{d:d,lm:lm};});
-
   })
-
   .then(function(o){
-
     DATA=(o.d.data||o.d).map(function(r){
-
       r.impr=+r.impr||0; r.clk=+r.clk||0;
-
       r.ctr=r.ctr!=null?+r.ctr:null;
-
       r.impr_yd=+r.impr_yd||0; r.clk_yd=+r.clk_yd||0;
-
       r.impr_td=+r.impr_td||0; r.clk_td=+r.clk_td||0;
       r.praia=(r.li_name||'').toUpperCase().indexOf('PRAIA')>=0?1:0;
-
       return r;
-
     });
-
     if(o.lm){lastUpdated=new Date(o.lm).getTime();updateTimeBadge();}
-
     render();
-
   })
-
   .catch(function(e){console.error('Error cargando data.json:',e);});
-
 </script>
-
 </body>
-
 </html>
-
